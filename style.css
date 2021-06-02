@@ -1,14 +1,37 @@
 :root {
-    --color-brown: #694540;
-    --color-dark-brown: #352222;
-    --color-green: #5e7e3a;
-    --color-grey: #3d3d3d;
+    --color-brown: #53494a;
+    --color-dark-brown: #473d3e;
+    --color-black: #201c1c;
+    --color-green: #8ec9b1;
+    --color-grey: #7d7777;
+    --color-yellow: #faf4de;
 }
+
+div[data-theme='dark'] {
+    color: white;
+    background-color: var(--color-brown);
+}
+
+div[data-theme='darker'] {
+    color: white;
+    background-color: var(--color-dark-brown);
+}
+
 
 html, body {
     padding: 0;
     margin: 0;
-    font-family: 'Nanum Gothic', sans-serif;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 14px;
+    color: var(--color-black);
+}
+
+.fas {
+    color: var(--color-yellow);
+}
+
+header .fas, .fa-home {
+    color: var(--color-green);
 }
 
 .main {
@@ -19,12 +42,11 @@ html, body {
 
 header {
     color: var(--color-dark-brown);
-    font-family: 'Jua', sans-serif;
+    font-family: 'Poppins', sans-serif;
     font-size: 36px;
 }
 
 header .fa-bars {
-    color: var(--color-green);
     font-size: 24px;
 }
 
@@ -32,8 +54,6 @@ nav {
     position: fixed;
     width: 50%;
     height: 100%;
-    color: white;
-    background-color: var(--color-dark-brown);
     display: none;
 }
 
@@ -57,7 +77,7 @@ nav li {
     display: flex;
     flex-direction: row;
     align-items: center;
-    padding: 8px;
+    margin: 24px 0;
 }
 
 .profile .image {
@@ -86,10 +106,9 @@ nav li {
     display: flex;
     flex-direction: row;
     justify-content: space-around;
-    width: 100%;
+    width: 80%;
     padding: 8px;
-    color: white;
-    background-color: var(--color-dark-brown);
+    border-radius: 8px 8px 0 0;
     font-weight: bold;
 }
 
@@ -97,7 +116,7 @@ nav li {
     width: 100%;
 }
 
-.bar_empty {
+.bar {
     background-color: var(--color-grey);
 }
 
@@ -106,11 +125,37 @@ nav li {
 }
 
 .progress_main {
-    color: white;
-    background-color: var(--color-brown);
+    padding: 16px;
+}
+
+.progress_main .bar {
+    height: 12px;
 }
 
 .progress_sub {
-    color: white;
-    background-color: var(--color-dark-brown);
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+}
+
+.progress_sub .bar {
+    height: 4px;
+}
+
+.progress_sub .progress_salary {
+    width: 40%;
+    padding: 8px;
+}
+
+.progress_sub .progress_rank {
+    width: 40%;
+    padding: 8px;
+}
+
+.date {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 16px;
 }
