@@ -16,64 +16,76 @@
 <body>
     <nav>
         <i class="fas fa-bars"></i>
-        <div class="menu">
-            <ul>
-                <li>사용자 관리</li>
-                <li>환경설정</li>
-            </ul>
-        </div>
+        <i class="fas fa-pencil-alt"></i>
     </nav>
+    <div class="menu">
+        <ul>
+            <li>사용자 관리</li>
+            <li>환경설정</li>
+        </ul>
+    </div>
     <section class="main">
+        <!--
         <header>
             goondori<i class="fas fa-bars"></i>
         </header>
+        -->
         <div id="1" class="user">
             <div class="profile">
                 <div class="image">
                     <img src="kiwi.jpeg" alt="profile_image">
                 </div>
                 <div class="info">
-                    병장 <b>군돌이</b>
+                    <b><span class="rank">병장</span></b> <span class="name">군돌이</span>
                     <br>
-                    <br>입대<span style="color:grey">│</span>2020.03.09
-                    <br>전역<span style="color:grey">│</span>2021.12.08
+                    <br>입대<span style="color: var(--color-grey)">│</span><span class="start-date">2020.03.09</span>
+                    <br>전역<span style="color:var(--color-grey)">│</span><span class="end-date">2021.12.08</span>
                 </div>
             </div>
             <div class="current" data-theme="darker">
                 <div class="home">
                     <i class="fas fa-home"></i>
-                    D-112
+                    <span class="d-day">D-112</span>
                 </div>
                 <div class="salary">
                     <i class="fas fa-align-justify"></i>
-                    병장 1호봉
+                    <span class="rank">병장</span> <span class="salary">1호봉</span>
                 </div>
             </div>
             <div class="progress">
                 <div class="progress_main" data-theme="dark">
-                    전역
+                    <b>전역</b><span class="end-date-type" style="float: right">2021년 12월 08일</span>
                     <div class="bar">
-
+                        <div class="bar_filled"></div>
                     </div>
+                    <span class="percent">80.0123456%</span>
                 </div>
                 <div class="progress_sub" data-theme="darker">
                     <div class="progress_salary">
+                        <small class="next-salary-date" style="float: right">2021.06.09</small>
+                        <br>
+                        <b>다음 호봉</b><span style="float: right"><span class="next-rank">병장</span> <span class="next-salary">2호봉</span></span>
                         <div class="bar">
-                            1
+                            <div class="bar_filled"></div>
                         </div>
+                        <span class="percent">20.01234%</span>
                     </div>
                     <div class="progress_rank">
+                        <small class="next-rank-date" style="float: right">2021.12.08</small>
+                        <br>
+                        <b>다음 계급</b><span class="next-rank" style="float: right">민간인</span>
                         <div class="bar">
-                            2
+                            <div class="bar_filled"></div>
                         </div>
+                        <span class="percent">30.01234%</span>
                     </div>
                 </div>
             </div>
             <div class="date">
-                <p class="date_full"><b>전체 복무일</b></p>
-                <p class="date_current"><b>현재 복무일</b></p>
-                <p class="date_remaining"><b>남은 복무일</b></p>
-                <p class="date_next"><b>다음 진급일</b></p>
+                <div><b>전체 복무일</b><span class="date_full" style="float: right">640</span></div>
+                <div><b>현재 복무일</b><span class="date_current">460</span></div>
+                <div><b>남은 복무일</b><span class="date_remaining">180</span></div>
+                <div><b>다음 진급일</b><span class="date_next">5</span></div>
             </div>
         </div>
     </section>
