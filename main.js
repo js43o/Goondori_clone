@@ -2,15 +2,21 @@ const RANK = ['이병', '일병', '상병', '병장', '민간인'];
 const MS_TO_DATE = 86400000;
 
 let users= [];
-let userNum = 0;
+let userNumber = 0;
+let currentPageIndex = 0;
+
 
 function addUser(name, startDate, endDate) {
+
     let user = {};
+
+    // Default values
     user.name = name;
     user.startDate = startDate;
     user.endDate = endDate;
 
     user.rankDate = [];
+
     let tempDate = new Date(startDate);
 
     for (let i of [0, 2, 6, 6, 7]) {
@@ -19,6 +25,7 @@ function addUser(name, startDate, endDate) {
     }
 
     tempDate = new Date(startDate);
+
     user.salary = 1;
     user.rankIndex = 1;
     user.lastSalaryDate;
@@ -36,6 +43,7 @@ function addUser(name, startDate, endDate) {
 
         user.salary++;
 
+        // 해당 계급의 최대 호봉을 초과했을 때
         if (tempDate >= user.rankDate[user.rankIndex]) {
             user.salary = 1;
             user.rankIndex++;
@@ -48,7 +56,7 @@ function addUser(name, startDate, endDate) {
 
     updatePrgoress(user);
 
-    users[userNum++] = user;
+    users[userNumber++] = user;
 }
 
 function updatePrgoress(user) {
@@ -174,6 +182,18 @@ function parseProgress(page, user) {
 
     }, 100);
 }
+
+document.querySelector('#menuOpenButton').onpointerdown = () => {
+    document.querySelector('.menu').classList.add('active');
+}
+
+document.querySelector('#menuCloseButton').onpointerdown = () => {
+    document.querySelector('.menu').classList.remove('active');
+}
+
+
+
+// Execution
 
 addUser('군돌이', new Date(2020, 2, 9), new Date(2021, 11, 8));
 showUser(users[0], document.querySelector('#user1'));

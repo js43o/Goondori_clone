@@ -15,22 +15,22 @@
 </head>
 
 <body>
-    <nav>
-        <i class="fas fa-bars"></i>
-        <i class="fas fa-pencil-alt"></i>
+    <nav data-theme="light">
+        <i id="menuOpenButton" class="fas fa-bars"></i>
+        <i id="editButton" class="fas fa-pencil-alt"></i>
     </nav>
-    <div class="menu">
+    <div class="menu" data-theme="darker">
         <ul>
+            <li id="menuCloseButton" class="fas fa-times"></li>
             <li>사용자 관리</li>
             <li>환경설정</li>
+            <li>goondori<i class="fas fa-bars" style="color: var(--color-green)"></i></li>
         </ul>
     </div>
+    <div class="editWindow">
+    
+    </div>
     <section class="main">
-        <!--
-        <header>
-            goondori<i class="fas fa-bars"></i>
-        </header>
-        -->
         <div id="user1" class="page">
             <div class="profile">
                 <div class="image">
