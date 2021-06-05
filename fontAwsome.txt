@@ -1,4 +1,0 @@
-병장마크 <i class="fas fa-align-justify"></i>
-상병마크 <i class="fas fa-bars"></i>
-일병마크 <i class="fas fa-equals"></i>
-이병마크 <i class="fas fa-minus"></i>
