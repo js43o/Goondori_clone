@@ -6,7 +6,7 @@ let userNumber = 0;
 let currentPageIndex = 0;
 
 
-function addUser(name, startDate, endDate) {
+function addUser(name, startDate, endDate, imgSrc) {
 
     let user = {};
 
@@ -14,6 +14,9 @@ function addUser(name, startDate, endDate) {
     user.name = name;
     user.startDate = startDate;
     user.endDate = endDate;
+    user.imgSrc= imgSrc;
+
+    document.querySelector('.image img').src = user.imgSrc;
 
     user.rankDate = [];
 
@@ -183,17 +186,24 @@ function parseProgress(page, user) {
     }, 100);
 }
 
-document.querySelector('#menuOpenButton').onpointerdown = () => {
+document.querySelector('#menu-open-button').onpointerdown = () => {
     document.querySelector('.menu').classList.add('active');
 }
 
-document.querySelector('#menuCloseButton').onpointerdown = () => {
+document.querySelector('#menu-close-button').onpointerdown = () => {
     document.querySelector('.menu').classList.remove('active');
 }
 
 
+document.querySelector('#edit-open-button').onpointerdown = () => {
+    document.querySelector('.editWindow').classList.add('active');
+}
+
+document.querySelector('#edit-close-button').onpointerdown = () => {
+    document.querySelector('.editWindow').classList.remove('active');
+}
 
 // Execution
 
-addUser('군돌이', new Date(2020, 2, 9), new Date(2021, 11, 8));
+addUser('군돌이', new Date(2020, 2, 9), new Date(2021, 11, 8), 'kiwi.jpeg');
 showUser(users[0], document.querySelector('#user1'));
