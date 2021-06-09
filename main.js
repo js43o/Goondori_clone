@@ -1,20 +1,50 @@
 const RANK = ['이병', '일병', '상병', '병장', '민간인'];
 const MS_TO_DATE = 86400000;
 
+const PERIODS = {
+    army: [0, 2, 6, 6, 4],
+    navy: [0, 2, 6, 6, 5],
+    airforce: [0, 2, 6, 6, 7],
+};
+
 let users= [];
 let userNumber = 0;
 let currentPageIndex = 0;
 
+const reduce = (f, acc, iter) => {
+    if (!iter) {
+        iter = acc[Symbol.iterator]();
+        acc = iter.next().value;
+    }
 
-function addUser(name, startDate, endDate, imgSrc) {
+    for (const a of iter) {
+        acc = f(acc, a);
+    }
+
+    return acc;
+}
+
+const sum = iter => reduce((a, b) => a + b, iter);
+
+const addDate = (date, y, m, d) => {
+    let res = new Date(date);
+    res.setFullYear(res.getFullYear() + y);
+    res.setMonth(res.getMonth() + m);
+    res.setDate(res.getDate() + d);
+    return res;
+}
+
+function addUser(name, startDate, endDate, imgSrc, kind) {
 
     let user = {};
 
     // Default values
     user.name = name;
     user.startDate = startDate;
-    user.endDate = endDate;
-    user.imgSrc= imgSrc;
+    user.endDate = endDate ? endDate : addDate(user.startDate, 0, sum(PERIODS[kind]), -1);
+    user.imgSrc = imgSrc;
+    user.kind = kind;
+    user.period = PERIODS[kind];
 
     document.querySelector('.image img').src = user.imgSrc;
 
@@ -22,7 +52,7 @@ function addUser(name, startDate, endDate, imgSrc) {
 
     let tempDate = new Date(startDate);
 
-    for (let i of [0, 2, 6, 6, 7]) {
+    for (let i of user.period) {
         tempDate.setMonth(tempDate.getMonth() + i);
         user.rankDate.push(new Date(tempDate));
     }
@@ -55,7 +85,7 @@ function addUser(name, startDate, endDate, imgSrc) {
 
     user.nextSalaryDate = new Date(user.lastSalaryDate);
     user.nextSalaryDate.setMonth(user.lastSalaryDate.getMonth() + 1);
-    user.nextRankDate = user.rankIndex >= 3 ? endDate : user.rankDate[user.rankIndex + 1];
+    user.nextRankDate = user.rankIndex >= 3 ? user.endDate : user.rankDate[user.rankIndex + 1];
 
     updatePrgoress(user);
 
@@ -64,9 +94,9 @@ function addUser(name, startDate, endDate, imgSrc) {
 
 function updatePrgoress(user) {
     user.updatingProgressId = setInterval(() => {
-        user.mainProgress = ((Date.now() - user.startDate) / (user.endDate - user.startDate)) * 100;
-        user.salaryProgress = ((Date.now() - user.lastSalaryDate) / (user.nextSalaryDate - user.lastSalaryDate)) * 100;
-        user.rankProgress = ((Date.now() - user.rankDate[user.rankIndex]) / (user.nextRankDate - user.rankDate[user.rankIndex])) * 100;
+        user.mainProgress = Math.min(((Date.now() - user.startDate) / (user.endDate - user.startDate)) * 100, 100);
+        user.salaryProgress = Math.min(((Date.now() - user.lastSalaryDate) / (user.nextSalaryDate - user.lastSalaryDate)) * 100, 100);
+        user.rankProgress = Math.min(((Date.now() - user.rankDate[user.rankIndex]) / (user.nextRankDate - user.rankDate[user.rankIndex])) * 100, 100);
     }, 100);
 }
 
@@ -132,7 +162,7 @@ function showUser(user, page) {
                 }
                 break;
             case 3:
-                if (nextSalary >= 7) {
+                if (nextSalary >= user.period[-1]) {
                     nextRankIndex++;
                     nextSalary = 1;
                 }
@@ -170,18 +200,24 @@ function parseProgress(page, user) {
     user.parsingProgressId = setInterval(() => {
         let bars = page.querySelectorAll('.bar_filled');
         let percents = page.querySelectorAll('.percent');
+
+        const _left = elem => elem.getBoundingClientRect().left;
+        const _width = elem => elem.getBoundingClientRect().width;
+
         // Main percent
+        bars[0].style.width = `${user.mainProgress}%`;
         percents[0].textContent = `${user.mainProgress.toFixed(7)}%`;
         percents[0].style.left = `${user.mainProgress}%`;
-        bars[0].style.width = `${user.mainProgress}%`;
+        
         // Salary percent
-        percents[1].textContent = `${user.salaryProgress.toFixed(5)}%`;
-        percents[1].style.left = user.salaryProgress > 70 ? '70%' : `${user.salaryProgress}%`;
         bars[1].style.width = `${user.salaryProgress}%`;
+        percents[1].textContent = `${user.salaryProgress.toFixed(5)}%`;
+        percents[1].style.left = `${user.salaryProgress}%`;
+
         // Rank percent
-        percents[2].textContent = `${user.rankProgress.toFixed(5)}%`;
-        percents[2].style.left = user.rankProgress > 70 ? '70%' : `${user.rankProgress}%`;
         bars[2].style.width = `${user.rankProgress}%`;
+        percents[2].textContent = `${user.rankProgress.toFixed(5)}%`;
+        percents[2].style.left = `${user.rankProgress}%`;
 
     }, 100);
 }
@@ -205,5 +241,5 @@ document.querySelector('#edit-close-button').onpointerdown = () => {
 
 // Execution
 
-addUser('군돌이', new Date(2020, 2, 9), new Date(2021, 11, 8), 'kiwi.jpeg');
+addUser('군돌이', new Date(2020, 2, 9), new Date(2021, 11, 9), 'kiwi.jpeg', 'army');
 showUser(users[0], document.querySelector('#user1'));
