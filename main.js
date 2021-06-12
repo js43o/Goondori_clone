@@ -118,7 +118,7 @@ function parseUserToPage(user, page) {
     // progress values
     parseValueToQuery(user.rankIndex < 4 ? dateToString(user.nextRankDate) : '', '.next-rank-date', page);
     parseValueToQuery(user.rankIndex < 4 ? dateToString(user.nextSalaryDate) : '', '.next-salary-date', page);
-    parseValueToQuery(user.rankIndex < 4 ? RANK[user.rankIndex] : '', '.next-rank', page);
+    parseValueToQuery(user.rankIndex < 4 ? RANK[user.rankIndex + 1] : '', '.next-rank', page);
 
     let nextRankIndex = user.rankIndex;
     let nextSalary = user.salary + 1;
@@ -127,7 +127,8 @@ function parseUserToPage(user, page) {
         nextRankIndex = user.rankIndex + 1;
         nextSalary = 1;
     }
-    page.querySelector('.next-salary').textContent = user.rankIndex < 4 ? `${RANK[nextRankIndex]} ${nextSalary}호봉` : '';
+    page.querySelector('.next-salary').textContent = user.rankIndex < 4 ?
+        `${RANK[nextRankIndex]} ${(nextRankIndex == 4 && nextSalary == 1) ? '' : nextSalary + '호봉'}` : '';
 
     parseProgressToPage(user, page);
 
