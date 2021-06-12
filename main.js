@@ -75,7 +75,7 @@ function addUser(name, startDate, endDate, imgSrc, kind) {
     user.lastSalaryDate = new Date(addDate(currentDate, 0, -1));
 
     // next-dates
-    user.nextSalaryDate = user.rankIndex > 3 ? user.lastSalaryDate : addDate(user.lastSalaryDate, 1);
+    user.nextSalaryDate = user.rankIndex == 4 ? user.lastSalaryDate : addDate(user.lastSalaryDate, 0, 1);
     user.nextRankDate = user.rankIndex >= 3 ? user.endDate : user.rankDate[user.rankIndex + 1];
 
     updatePrgoress(user);
@@ -157,8 +157,8 @@ function parseProgressToPage(user, page) {
             bars[i].style.width = `${progresses[i]}%`;
             percents[i].textContent = `${progresses[i].toFixed(7)}%`;
             percents[i].style.left = `${progresses[i]}%`;
-            if (getLeft(percents[i]) + getWidth(percents[i]) > getWidth(bars[i].parentElement))
-                percents[i].style.left = Math.max(0, getWidth(bars[i].parentElement) - getWidth(percents[i])) + 'px';
+            if (getLeft(percents[i]) + getWidth(percents[i]) > getLeft(bars[i].parentElement) + getWidth(bars[i].parentElement))
+                percents[i].style.left = getWidth(bars[i].parentElement) - getWidth(percents[i]) + 'px';
         }
         
     }, 100);
