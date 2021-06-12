@@ -62,7 +62,6 @@ nav .fas {
     padding: 12px;
     opacity: 0;
     font-size: 16px;
-    font-weight: bold;
     transition: all 0.2s;
 }
 
@@ -94,6 +93,7 @@ nav .fas {
     position: fixed;
     bottom: 8px;
     font-family: 'Poppins', sans-serif;
+    font-size: 18px;
 }
 
 .editWindow {
@@ -232,7 +232,7 @@ small {
     margin-top: 10px;
 }
 
-.progress_sub {
+.sub-progress {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -241,12 +241,12 @@ small {
     overflow: hidden;
 }
 
-.progress_sub .bar {
+.sub-progress .bar {
     height: 4px;
     margin-top: 10px;
 }
 
-.progress_sub .progress_salary, .progress_rank {
+.sub-progress .progress_salary, .progress_rank {
     width: 45%;
 }
 
@@ -260,12 +260,12 @@ small {
     font-size: 12px;
 }
 
-.progress_sub .bar_filled {
+.sub-progress .bar_filled {
     height: 100%;
     background-color: var(--color-yellow);
 }
 
-.progress_sub .percent {
+.sub-progress .percent {
     color: var(--color-yellow);
     font-size: 11px;
 }

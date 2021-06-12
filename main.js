@@ -1,4 +1,4 @@
-const RANK = ['이병', '일병', '상병', '병장', '민간인'];
+const RANK = ['이병', '일병', '상병', '병장', '민간인', '?'];
 const RANK_MARK = ['fa-minus', 'fa-equals', 'fa-bars', 'fa-align-justify', 'fa-grin-squint'];
 const MS_TO_DATE = 86400000;
 const PERIODS = {
@@ -41,45 +41,41 @@ function addUser(name, startDate, endDate, imgSrc, kind) {
 
     let user = {};
 
-    // setting main values
+    // main values
     user.name = name;
     user.startDate = startDate;
     user.endDate = endDate ? endDate : addDate(user.startDate, 0, sum(PERIODS[kind]), -1);
     document.querySelector('.profile_image img').src = imgSrc;
     user.period = PERIODS[kind];
 
-    // setting rank-date
-    user.rankDate = [];
+    // rank-date
+    user.rankDate = [ new Date(user.startDate) ];
     let acc = 0;
 
-    user.rankDate.push(new Date(startDate));
-    for (let i of user.period) {
+    for (let i of user.period.slice(0, -1)) {
         acc += i;
-        user.rankDate.push(new Date(addDate(startDate, 0, acc)));
+        user.rankDate.push(new Date(addDate(user.startDate, 0, acc)));
     }
+    user.rankDate.push(new Date(user.endDate)); // endDate is less 1 day
 
-    // setting current rank/salary
-    user.salary = 1;
-    user.rankIndex = 1;
+    // current rank/salary
+    user.salary = 0;
+    user.rankIndex = 0;
     user.lastSalaryDate;
     let currentDate = new Date(startDate);
 
     while ((currentDate = addDate(currentDate, 0, 1)) < Date.now()) {
-
-        user.salary++;
-
         // 해당 계급의 최대 호봉을 초과했을 때
-        if (currentDate >= user.rankDate[user.rankIndex]) {
-            user.salary = 1;
+        if (currentDate >= user.rankDate[user.rankIndex + 1]) {
+            user.salary = 0;
             user.rankIndex++;
         }
+        user.salary++;
     }
-    currentDate = addDate(currentDate, 0, -1);
-    user.rankIndex--;
-    user.lastSalaryDate = new Date(currentDate);
+    user.lastSalaryDate = new Date(addDate(currentDate, 0, -1));
 
-    // setting next-dates
-    user.nextSalaryDate = addDate(user.lastSalaryDate, 1);
+    // next-dates
+    user.nextSalaryDate = user.rankIndex > 3 ? user.lastSalaryDate : addDate(user.lastSalaryDate, 1);
     user.nextRankDate = user.rankIndex >= 3 ? user.endDate : user.rankDate[user.rankIndex + 1];
 
     updatePrgoress(user);
@@ -88,11 +84,12 @@ function addUser(name, startDate, endDate, imgSrc, kind) {
     users[userNum++] = user;
 }
 
+
 function updatePrgoress(user) {
     user.updatingProgressId = setInterval(() => {
-        user.mainProgress = Math.min(((Date.now() - user.startDate) / (user.endDate - user.startDate)) * 100, 100);
-        user.salaryProgress = Math.min(((Date.now() - user.lastSalaryDate) / (user.nextSalaryDate - user.lastSalaryDate)) * 100, 100);
-        user.rankProgress = Math.min(((Date.now() - user.rankDate[user.rankIndex]) / (user.nextRankDate - user.rankDate[user.rankIndex])) * 100, 100);
+        user.mainProgress = Math.min(100, ((Date.now() - user.startDate) / (user.endDate - user.startDate)) * 100);
+        user.salaryProgress = Math.min(100, ((Date.now() - user.lastSalaryDate) / (user.nextSalaryDate - user.lastSalaryDate)) * 100);
+        user.rankProgress = Math.min(100, ((Date.now() - user.rankDate[user.rankIndex]) / (user.nextRankDate - user.rankDate[user.rankIndex])) * 100);
     }, 100);
 }
 
@@ -113,59 +110,58 @@ function parseUserToPage(user, page) {
     // main values
     parseValueToQuery(user.name, '.name', page);
     parseValueToQuery(RANK[user.rankIndex], '.rank', page);
-    parseValueToQuery(user.salary, '.salary', page);
+    parseValueToQuery(user.rankIndex > 3 ? '' : `${user.salary}호봉`, '.salary', page);
     parseValueToQuery(dateToString(user.startDate), '.start-date', page);
     parseValueToQuery(dateToString(user.endDate), '.end-date', page);
     page.querySelector('.level .fas').classList.add(RANK_MARK[user.rankIndex]);
 
     // progress values
-    parseValueToQuery(dateToString(user.nextRankDate), '.next-rank-date', page);
-    parseValueToQuery(dateToString(user.nextSalaryDate), '.next-salary-date', page);
-    parseValueToQuery(RANK[Math.max(user.rankIndex + 1, 4)], '.next-rank', page);
+    parseValueToQuery(user.rankIndex < 4 ? dateToString(user.nextRankDate) : '', '.next-rank-date', page);
+    parseValueToQuery(user.rankIndex < 4 ? dateToString(user.nextSalaryDate) : '', '.next-salary-date', page);
+    parseValueToQuery(user.rankIndex < 4 ? RANK[user.rankIndex] : '', '.next-rank', page);
 
     let nextRankIndex = user.rankIndex;
     let nextSalary = user.salary + 1;
 
-    if (nextSalary > user.period[user.rankIndex]) {
+    if (user.rankIndex < 4 && nextSalary > user.period[user.rankIndex]) {
         nextRankIndex = user.rankIndex + 1;
         nextSalary = 1;
     }
-
-    page.querySelector('.next-salary').textContent = `${RANK[nextRankIndex]} ${nextSalary}호봉`
+    page.querySelector('.next-salary').textContent = user.rankIndex < 4 ? `${RANK[nextRankIndex]} ${nextSalary}호봉` : '';
 
     parseProgressToPage(user, page);
 
     // days values
-    parseValueToQuery(Math.ceil((user.endDate - user.startDate) / MS_TO_DATE) + 1, '.full-day', page);
-    parseValueToQuery(Math.ceil((new Date() - user.startDate) / MS_TO_DATE), '.current-day', page);
-    parseValueToQuery(+page.querySelector('.full-day').textContent - +page.querySelector('.current-day').textContent, '.remaining-day', page);
-    parseValueToQuery(Math.ceil((user.nextRankDate - new Date()) / MS_TO_DATE), '.next-rank-day', page);
+    let fullDay = Math.ceil((user.endDate - user.startDate) / MS_TO_DATE) + 1;
+    parseValueToQuery(fullDay, '.full-day', page);
+    parseValueToQuery(user.rankIndex < 4 ? Math.ceil((new Date() - user.startDate) / MS_TO_DATE) : fullDay, '.current-day', page);
+    parseValueToQuery(fullDay - +page.querySelector('.current-day').textContent, '.remaining-day', page);
+    parseValueToQuery(user.rankIndex < 4 ? Math.ceil((user.nextRankDate - new Date()) / MS_TO_DATE) : 0, '.next-rank-day', page);
 }
 
+
 function parseProgressToPage(user, page) {
+
+    const getLeft = elem => elem.getBoundingClientRect().left;
+    const getWidth = elem => elem.getBoundingClientRect().width;
+
+    let bars = page.querySelectorAll('.bar_filled');
+    let percents = page.querySelectorAll('.percent');
+
     user.parsingProgressId = setInterval(() => {
-        let bars = page.querySelectorAll('.bar_filled');
-        let percents = page.querySelectorAll('.percent');
 
-        const _left = elem => elem.getBoundingClientRect().left;
-        const _width = elem => elem.getBoundingClientRect().width;
+        const progresses = [user.mainProgress, user.salaryProgress, user.rankProgress];
 
-        // main percent
-        bars[0].style.width = `${user.mainProgress}%`;
-        percents[0].textContent = `${user.mainProgress.toFixed(7)}%`;
-        percents[0].style.left = `${user.mainProgress}%`;
-
-        // salary percent
-        bars[1].style.width = `${user.salaryProgress}%`;
-        percents[1].textContent = `${user.salaryProgress.toFixed(5)}%`;
-        percents[1].style.left = `${user.salaryProgress}%`;
-
-        // rank percent
-        bars[2].style.width = `${user.rankProgress}%`;
-        percents[2].textContent = `${user.rankProgress.toFixed(5)}%`;
-        percents[2].style.left = `${user.rankProgress}%`;
-
+        for (let i = 0; i < 3; i++) {
+            bars[i].style.width = `${progresses[i]}%`;
+            percents[i].textContent = `${progresses[i].toFixed(7)}%`;
+            percents[i].style.left = `${progresses[i]}%`;
+            if (getLeft(percents[i]) + getWidth(percents[i]) > getWidth(bars[i].parentElement))
+                percents[i].style.left = Math.max(0, getWidth(bars[i].parentElement) - getWidth(percents[i])) + 'px';
+        }
+        
     }, 100);
+    
 }
 
 // add buttons action
