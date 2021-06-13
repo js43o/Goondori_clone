@@ -9,7 +9,8 @@ const PERIODS = {
 
 let users = [];
 let userNum = 0;
-let currentPageIndex = 0;
+let currentUser;
+let currentPage = document.querySelector('#user1');
 
 const reduce = (f, acc, iter) => {
     if (!iter) {
@@ -37,16 +38,22 @@ const addDate = (date, y = 0, m = 0, d = 0) => {
     return res;
 }
 
-function addUser(name, startDate, endDate, imgSrc, kind) {
+function addUser(...info) {
+    let newUser = {};
+    setUser(newUser, ...info);
+    users.push(newUser);
 
-    let user = {};
+    return newUser;
+}
 
+function setUser(user, name, startDate, endDate, imgSrc, armyType) {
     // main values
     user.name = name;
     user.startDate = startDate;
-    user.endDate = endDate ? endDate : addDate(user.startDate, 0, sum(PERIODS[kind]), -1);
+    user.endDate = endDate ? endDate : addDate(user.startDate, 0, sum(PERIODS[armyType]), -1);
     document.querySelector('.profile_image img').src = imgSrc;
-    user.period = PERIODS[kind];
+    user.armyType = armyType;
+    user.period = PERIODS[armyType];
 
     // rank-date
     user.rankDate = [ new Date(user.startDate) ];
@@ -79,9 +86,6 @@ function addUser(name, startDate, endDate, imgSrc, kind) {
     user.nextRankDate = user.rankIndex >= 3 ? user.endDate : user.rankDate[user.rankIndex + 1];
 
     updatePrgoress(user);
-
-    // add user
-    users[userNum++] = user;
 }
 
 
@@ -90,19 +94,19 @@ function updatePrgoress(user) {
         user.mainProgress = Math.min(100, ((Date.now() - user.startDate) / (user.endDate - user.startDate)) * 100);
         user.salaryProgress = Math.min(100, ((Date.now() - user.lastSalaryDate) / (user.nextSalaryDate - user.lastSalaryDate)) * 100);
         user.rankProgress = Math.min(100, ((Date.now() - user.rankDate[user.rankIndex]) / (user.nextRankDate - user.rankDate[user.rankIndex])) * 100);
-    }, 100);
+    }, 50);
 }
 
 
-const parseValueToQuery = (value, query, elem) => {
-    for (let i of elem.querySelectorAll(query)) {
+const parseValueToQuery = (value, query, page) => {
+    for (let i of page.querySelectorAll(query)) {
         i.textContent = value;
     }
 }
 
-const dateToString = date => {
-    return `${date.getFullYear()}.${date.getMonth() > 8 ? date.getMonth() + 1 :
-        '0' + (date.getMonth() + 1)}.${date.getDate() > 9 ? date.getDate() : '0' + date.getDate()}`;
+const dateToString = (date, delm) => {
+    return `${date.getFullYear()}${delm}${date.getMonth() > 8 ? date.getMonth() + 1 :
+        '0' + (date.getMonth() + 1)}${delm}${date.getDate() > 9 ? date.getDate() : '0' + date.getDate()}`;
 }
 
 function parseUserToPage(user, page) {
@@ -111,13 +115,13 @@ function parseUserToPage(user, page) {
     parseValueToQuery(user.name, '.name', page);
     parseValueToQuery(RANK[user.rankIndex], '.rank', page);
     parseValueToQuery(user.rankIndex > 3 ? '' : `${user.salary}호봉`, '.salary', page);
-    parseValueToQuery(dateToString(user.startDate), '.start-date', page);
-    parseValueToQuery(dateToString(user.endDate), '.end-date', page);
+    parseValueToQuery(dateToString(user.startDate, '.'), '.start-date', page);
+    parseValueToQuery(dateToString(user.endDate, '.'), '.end-date', page);
     page.querySelector('.level .fas').classList.add(RANK_MARK[user.rankIndex]);
 
     // progress values
-    parseValueToQuery(user.rankIndex < 4 ? dateToString(user.nextRankDate) : '', '.next-rank-date', page);
-    parseValueToQuery(user.rankIndex < 4 ? dateToString(user.nextSalaryDate) : '', '.next-salary-date', page);
+    parseValueToQuery(user.rankIndex < 4 ? dateToString(user.nextRankDate, '.') : '', '.next-rank-date', page);
+    parseValueToQuery(user.rankIndex < 4 ? dateToString(user.nextSalaryDate, '.') : '', '.next-salary-date', page);
     parseValueToQuery(user.rankIndex < 4 ? RANK[user.rankIndex + 1] : '', '.next-rank', page);
 
     let nextRankIndex = user.rankIndex;
@@ -155,34 +159,57 @@ function parseProgressToPage(user, page) {
 
         for (let i = 0; i < 3; i++) {
             bars[i].style.width = `${progresses[i]}%`;
-            percents[i].textContent = `${progresses[i].toFixed(7)}%`;
+            percents[i].textContent = `${progresses[i].toFixed(i == 0 ? 7 : 5)}%`;
             percents[i].style.left = `${progresses[i]}%`;
             if (getLeft(percents[i]) + getWidth(percents[i]) > getLeft(bars[i].parentElement) + getWidth(bars[i].parentElement))
                 percents[i].style.left = getWidth(bars[i].parentElement) - getWidth(percents[i]) + 'px';
         }
         
-    }, 100);
+    }, 50);
     
 }
 
 // add buttons action
 document.querySelector('#menu-open-button').onpointerdown = () => {
-    document.querySelector('.menu').classList.add('active');
-}
+    let menu = document.querySelector('.menu');
+    menu.classList.add('active');
 
-document.querySelector('#menu-close-button').onpointerdown = () => {
-    document.querySelector('.menu').classList.remove('active');
+    menu.querySelector('#menu-close-button').onpointerdown = () => {
+        menu.classList.remove('active');
+    }
 }
 
 document.querySelector('#edit-open-button').onpointerdown = () => {
-    document.querySelector('.editWindow').classList.add('active');
+    let editWindow = document.querySelector('.edit-window');
+    editWindow.classList.add('active');
+
+    editWindow.querySelector('#edit-close-button').onpointerdown = () => {
+        editWindow.classList.remove('active');
+    }
+    
+    let form = document.forms['user-info'];
+    initializeForm(form, currentUser);
+
+    form.submit.onpointerdown = event => {
+        setUser(currentUser, form.name.value,
+            new Date(`${form['start-date'].value}`),
+            new Date(`${form['end-date'].value}`),
+        'kiwi.jpeg', form['army-type'].value);
+        parseUserToPage(currentUser, currentPage);
+        editWindow.querySelector('#edit-close-button').onpointerdown();
+        this.onsubmit = () => false;
+    }
 }
 
-document.querySelector('#edit-close-button').onpointerdown = () => {
-    document.querySelector('.editWindow').classList.remove('active');
+const initializeForm = (form, user) => {
+    form.name.value = user.name;
+    form['start-date'].value = dateToString(user.startDate, '-');
+    form['army-type'].value = user.armyType;
+    form['end-date'].value = dateToString(user.endDate, '-');
 }
+
 
 
 // Execution
-addUser('군돌이', new Date(2020, 2, 9), null, 'kiwi.jpeg', 'airforce');
-parseUserToPage(users[0], document.querySelector('#user1'));
+currentUser = addUser('군돌이', new Date(2020, 2, 9), null, 'kiwi.jpeg', 'airforce');
+parseUserToPage(currentUser, currentPage);

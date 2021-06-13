@@ -27,23 +27,23 @@
                 <li>goondori<i class="fas fa-bars" style="color: var(--color-green)"></i></li>
             </ul>
         </div>
-        <div class="editWindow" data-theme="darker">
+        <div class="edit-window" data-theme="darker">
             <i id="edit-close-button" class="fas fa-chevron-left"></i>
             <form name="user-info">
                 <ul>
-                    <li>이름<input type="text" name="name"></li>
-                    <li>입대일<input type="date" name="start-date"></li>
+                    <li>이름<input name="name" type="text"></li>
+                    <li>입대일<input name="start-date" type="date"></li>
                     <li>군별
                         <select name="army-type">
                             <option value="army">육군</option>
                             <option value="navy">해군</option>
-                            <option value="air-force">공군</option>
+                            <option value="airforce">공군</option>
                         </select>
                     </li>
                     <li>사진 변경하기<i class="fas fa-camera"></i></li>
-                    <li>전역일 조정<input type="date" name="end-date"></li>
+                    <li>전역일 조정<input name="end-date" type="date"></li>
                 </ul>
-                <input type="submit" value="저장하기">
+                <input name="submit" type="submit" value="수정하기">
             </form>
         </div>
         <section class="main">
@@ -53,7 +53,7 @@
                         <img src="" alt="profile_image">
                     </div>
                     <div class="info">
-                        <b><span class="rank"></span></b> <span class="name"></span>
+                        <span class="rank"></span> <span class="name" style="font-weight: bold"></span>
                         <br>
                         <br>입대<span style="color: var(--color-grey)">│</span><span class="start-date"></span>
                         <br>전역<span style="color: var(--color-grey)">│</span><span class="end-date"></span>
