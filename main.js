@@ -66,7 +66,7 @@ function setUser(user, name, startDate, endDate, imgSrc, armyType) {
     user.rankDate.push(new Date(user.endDate)); // endDate is less 1 day
 
     // current rank/salary
-    user.salary = 0;
+    user.salary = 1;
     user.rankIndex = 0;
     user.lastSalaryDate;
     let currentDate = new Date(startDate);
@@ -117,7 +117,7 @@ function parseUserToPage(user, page) {
     parseValueToQuery(user.rankIndex > 3 ? '' : `${user.salary}호봉`, '.salary', page);
     parseValueToQuery(dateToString(user.startDate, '.'), '.start-date', page);
     parseValueToQuery(dateToString(user.endDate, '.'), '.end-date', page);
-    page.querySelector('.level .fas').classList.add(RANK_MARK[user.rankIndex]);
+    page.querySelector('.level i').className = `fas ${RANK_MARK[user.rankIndex]}`;
 
     // progress values
     parseValueToQuery(user.rankIndex < 4 ? dateToString(user.nextRankDate, '.') : '', '.next-rank-date', page);
