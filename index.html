@@ -31,8 +31,8 @@
             <i id="edit-close-button" class="fas fa-chevron-left"></i>
             <form name="user-info">
                 <ul>
-                    <li>이름<input name="name" type="text"></li>
-                    <li>입대일<input name="start-date" type="date" min="1950-01-01"></li>
+                    <li>이름<input name="name" type="text" maxlength="8"></li>
+                    <li>입대일<input name="start-date" type="date" min="1950-01-01" required></li>
                     <li>군별
                         <select name="army-type">
                             <option value="army">육군</option>
@@ -41,7 +41,7 @@
                         </select>
                     </li>
                     <li>사진 변경하기<i class="fas fa-camera"></i></li>
-                    <li>전역일 조정<input name="end-date" type="date" min="1950-01-01"></li>
+                    <li>전역일 조정<input name="end-date" type="date" min="1950-01-01" required></li>
                 </ul>
                 <input name="submit" type="submit" value="수정하기">
             </form>

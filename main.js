@@ -104,7 +104,7 @@ const parseValueToQuery = (value, query, page) => {
     }
 }
 
-const dateToString = (date, delm) => {
+const dateToString = (date, delm = '-') => {
     return `${date.getFullYear()}${delm}${date.getMonth() > 8 ? date.getMonth() + 1 :
         '0' + (date.getMonth() + 1)}${delm}${date.getDate() > 9 ? date.getDate() : '0' + date.getDate()}`;
 }
@@ -190,22 +190,48 @@ document.querySelector('#edit-open-button').onpointerdown = () => {
     let form = document.forms['user-info'];
     initializeForm(form, currentUser);
 
-    form.submit.onpointerdown = event => {
+    form['army-type'].onchange = event => {
+        switch(form['army-type'].value) {
+            case 'army':
+                form['end-date'].value = dateToString(
+                addDate(new Date(form['start-date'].value), 0, 18, -1));
+                break;
+            case 'navy':
+                form['end-date'].value = dateToString(
+                addDate(new Date(form['start-date'].value), 0, 20, -1));
+                break;
+            case 'airforce':
+                form['end-date'].value = dateToString(
+                addDate(new Date(form['start-date'].value), 0, 21, -1));
+                break;
+        }
+    }
+
+    form.onsubmit = event => {
+        event.preventDefault();
+
+        if (form['start-date'].value > form['end-date'].value) {
+            alert("시작일이 종료일보다 클 수 없습니다.");
+            form['start-date'].focus();
+            return false;
+        }
+
         setUser(currentUser, form.name.value,
             new Date(`${form['start-date'].value}`),
             new Date(`${form['end-date'].value}`),
         'kiwi.jpeg', form['army-type'].value);
+
         parseUserToPage(currentUser, currentPage);
         editWindow.querySelector('#edit-close-button').onpointerdown();
-        this.onsubmit = () => false;
     }
 }
 
 const initializeForm = (form, user) => {
     form.name.value = user.name;
-    form['start-date'].value = dateToString(user.startDate, '-');
+    form['start-date'].value = dateToString(user.startDate);
+    form['start-date'].max = dateToString(new Date());
     form['army-type'].value = user.armyType;
-    form['end-date'].value = dateToString(user.endDate, '-');
+    form['end-date'].value = dateToString(user.endDate);
 }
 
 
