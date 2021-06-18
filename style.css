@@ -62,15 +62,13 @@ nav .fas {
     width: 60%;
     height: 100%;
     padding: 12px;
-    opacity: 0;
     font-size: 16px;
     font-weight: bold;
-    transition: left 0.2s, opacity 0.2s;
+    transition: left 0.2s;
 }
 
 .menu.active {
     left: 0;
-    opacity: 1;
 }
 
 #menu-close-button {
@@ -95,6 +93,22 @@ nav .fas {
     font-size: 18px;
 }
 
+.black {
+    position: fixed;
+    z-index: 50;
+    visibility: hidden;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+    opacity: 0;
+    transition: visibility 0.2s, opacity 0.2s;
+}
+
+.black.active {
+    visibility: visible;
+    opacity: 0.5;
+}
+
 /* edit styles */
 
 .edit-window {
@@ -105,13 +119,11 @@ nav .fas {
     width: 100%;
     height: 100%;
     font-size: 14px;
-    opacity: 0;
-    transition: top 0.4s, opacity 0.4s;
+    transition: top 0.4s;
 }
 
 .edit-window.active {
     top: 0;
-    opacity: 1;
 }
 
 .edit-window .fas {

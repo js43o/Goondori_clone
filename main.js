@@ -51,9 +51,9 @@ function setUser(user, name, startDate, endDate, imgSrc, armyType) {
     user.name = name;
     user.startDate = startDate;
     user.endDate = endDate ? endDate : addDate(user.startDate, 0, sum(PERIODS[armyType]), -1);
-    document.querySelector('.profile_image img').src = imgSrc;
     user.armyType = armyType;
     user.period = PERIODS[armyType];
+    user.imgSrc = imgSrc;
 
     // rank-date
     user.rankDate = [ new Date(user.startDate) ];
@@ -119,6 +119,9 @@ function parseUserToPage(user, page) {
     parseValueToQuery(dateToString(user.endDate, '.'), '.end-date', page);
     page.querySelector('.level i').className = `fas ${RANK_MARK[user.rankIndex]}`;
 
+    // profile image
+    page.querySelector('.profile_image img').src = user.imgSrc;
+
     // progress values
     parseValueToQuery(user.rankIndex < 4 ? dateToString(user.nextRankDate, '.') : '', '.next-rank-date', page);
     parseValueToQuery(user.rankIndex < 4 ? dateToString(user.nextSalaryDate, '.') : '', '.next-salary-date', page);
@@ -174,8 +177,12 @@ document.querySelector('#menu-open-button').onpointerdown = () => {
     let menu = document.querySelector('.menu');
     menu.classList.add('active');
 
+    let black = document.querySelector('.black');
+    black.classList.add('active');
+
     menu.querySelector('#menu-close-button').onpointerdown = () => {
         menu.classList.remove('active');
+        black.classList.remove('active');
     }
 }
 
@@ -188,7 +195,7 @@ document.querySelector('#edit-open-button').onpointerdown = () => {
     }
     
     let form = document.forms['user-info'];
-    initializeForm(form, currentUser);
+    initializeForm(currentUser, form);
 
     form['army-type'].onchange = event => {
         switch(form['army-type'].value) {
@@ -226,14 +233,13 @@ document.querySelector('#edit-open-button').onpointerdown = () => {
     }
 }
 
-const initializeForm = (form, user) => {
+const initializeForm = (user, form) => {
     form.name.value = user.name;
     form['start-date'].value = dateToString(user.startDate);
     form['start-date'].max = dateToString(new Date());
     form['army-type'].value = user.armyType;
     form['end-date'].value = dateToString(user.endDate);
 }
-
 
 
 // Execution
