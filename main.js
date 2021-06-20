@@ -1,4 +1,4 @@
-const RANK = ['이병', '일병', '상병', '병장', '민간인', '?'];
+const RANK = ['이병', '일병', '상병', '병장', '민간인'];
 const RANK_MARK = ['fa-minus', 'fa-equals', 'fa-bars', 'fa-align-justify', 'fa-grin-squint'];
 const MS_TO_DATE = 86400000;
 const PERIODS = {
@@ -6,11 +6,26 @@ const PERIODS = {
     navy: [2, 6, 6, 5],
     airforce: [2, 6, 6, 7],
 };
+const fileTypes = [
+    "image/apng",
+    "image/bmp",
+    "image/gif",
+    "image/jpeg",
+    "image/pjpeg",
+    "image/png",
+    "image/svg+xml",
+    "image/tiff",
+    "image/webp",
+    "image/x-icon"
+  ];
 
+let currentIndex = 0;
 let users = [];
-let userNum = 0;
-let currentUser;
-let currentPage = document.querySelector('#user1');
+let pages = [];
+
+
+/* utility functions */
+
 
 const reduce = (f, acc, iter) => {
     if (!iter) {
@@ -24,8 +39,18 @@ const reduce = (f, acc, iter) => {
 
     return acc;
 }
-
 const sum = iter => reduce((a, b) => a + b, iter);
+
+const parseValueToQuery = (value, query, page) => {
+    for (let i of page.querySelectorAll(query)) {
+        i.textContent = value;
+    }
+}
+
+const dateToString = (date, delm = '-') => {
+    return `${date.getFullYear()}${delm}${date.getMonth() > 8 ? date.getMonth() + 1 :
+        '0' + (date.getMonth() + 1)}${delm}${date.getDate() > 9 ? date.getDate() : '0' + date.getDate()}`;
+}
 
 // 기존의 date 객체를 받아서 변형없이 새로운 date 객체를 반환
 const addDate = (date, y = 0, m = 0, d = 0) => {
@@ -37,6 +62,20 @@ const addDate = (date, y = 0, m = 0, d = 0) => {
 
     return res;
 }
+
+const getFilePath = input => {
+    if (input.files.length === 0) return null;
+    let file = input.files[0];
+    if (validFileType(file)) return URL.createObjectURL(file);
+}
+
+const validFileType = file => {
+    return fileTypes.includes(file.type);
+}
+
+
+/* user & page setting functions */
+
 
 function addUser(...info) {
     let newUser = {};
@@ -53,7 +92,7 @@ function setUser(user, name, startDate, endDate, imgSrc, armyType) {
     user.endDate = endDate ? endDate : addDate(user.startDate, 0, sum(PERIODS[armyType]), -1);
     user.armyType = armyType;
     user.period = PERIODS[armyType];
-    user.imgSrc = imgSrc;
+    if (imgSrc) user.imgSrc = imgSrc;
 
     // rank-date
     user.rankDate = [ new Date(user.startDate) ];
@@ -81,6 +120,8 @@ function setUser(user, name, startDate, endDate, imgSrc, armyType) {
     }
     user.lastSalaryDate = new Date(addDate(currentDate, 0, -1));
 
+    if (user.endDate < new Date()) user.rankIndex = 4;
+
     // next-dates
     user.nextSalaryDate = user.rankIndex == 4 ? user.lastSalaryDate : addDate(user.lastSalaryDate, 0, 1);
     user.nextRankDate = user.rankIndex >= 3 ? user.endDate : user.rankDate[user.rankIndex + 1];
@@ -95,18 +136,6 @@ function updatePrgoress(user) {
         user.salaryProgress = Math.min(100, ((Date.now() - user.lastSalaryDate) / (user.nextSalaryDate - user.lastSalaryDate)) * 100);
         user.rankProgress = Math.min(100, ((Date.now() - user.rankDate[user.rankIndex]) / (user.nextRankDate - user.rankDate[user.rankIndex])) * 100);
     }, 50);
-}
-
-
-const parseValueToQuery = (value, query, page) => {
-    for (let i of page.querySelectorAll(query)) {
-        i.textContent = value;
-    }
-}
-
-const dateToString = (date, delm = '-') => {
-    return `${date.getFullYear()}${delm}${date.getMonth() > 8 ? date.getMonth() + 1 :
-        '0' + (date.getMonth() + 1)}${delm}${date.getDate() > 9 ? date.getDate() : '0' + date.getDate()}`;
 }
 
 function parseUserToPage(user, page) {
@@ -172,7 +201,11 @@ function parseProgressToPage(user, page) {
     
 }
 
-// add buttons action
+
+/* event & form functions */
+
+
+// menu button event
 document.querySelector('#menu-open-button').onpointerdown = () => {
     let menu = document.querySelector('.menu');
     menu.classList.add('active');
@@ -186,6 +219,7 @@ document.querySelector('#menu-open-button').onpointerdown = () => {
     }
 }
 
+// edit button event
 document.querySelector('#edit-open-button').onpointerdown = () => {
     let editWindow = document.querySelector('.edit-window');
     editWindow.classList.add('active');
@@ -195,8 +229,10 @@ document.querySelector('#edit-open-button').onpointerdown = () => {
     }
     
     let form = document.forms['user-info'];
-    initializeForm(currentUser, form);
 
+    initializeForm(users[currentIndex], form);
+
+    // set end-date by army-type
     form['army-type'].onchange = event => {
         switch(form['army-type'].value) {
             case 'army':
@@ -214,6 +250,7 @@ document.querySelector('#edit-open-button').onpointerdown = () => {
         }
     }
 
+    // submit action
     form.onsubmit = event => {
         event.preventDefault();
 
@@ -223,15 +260,20 @@ document.querySelector('#edit-open-button').onpointerdown = () => {
             return false;
         }
 
-        setUser(currentUser, form.name.value,
+        setUser(users[currentIndex], form.name.value,
             new Date(`${form['start-date'].value}`),
             new Date(`${form['end-date'].value}`),
-        'kiwi.jpeg', form['army-type'].value);
+            getFilePath(form.image),
+            form['army-type'].value);
 
-        parseUserToPage(currentUser, currentPage);
+        parseUserToPage(users[currentIndex], pages[currentIndex]);
+
         editWindow.querySelector('#edit-close-button').onpointerdown();
     }
 }
+
+// profile image event (writning...)
+
 
 const initializeForm = (user, form) => {
     form.name.value = user.name;
@@ -242,6 +284,7 @@ const initializeForm = (user, form) => {
 }
 
 
-// Execution
-currentUser = addUser('군돌이', new Date(2020, 2, 9), null, 'kiwi.jpeg', 'airforce');
-parseUserToPage(currentUser, currentPage);
+// initial execution
+pages.push(document.querySelector('#user1'));
+addUser('군돌이', new Date(2020, 2, 9), null, 'kiwi.jpeg', 'airforce');
+parseUserToPage(users[currentIndex], pages[currentIndex]);

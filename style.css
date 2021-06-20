@@ -51,6 +51,10 @@ nav .fas {
     cursor: pointer;
 }
 
+nav .fas:active {
+    color: var(--color-grey);
+}
+
 /* menu styles */
 
 .menu {
@@ -168,6 +172,16 @@ nav .fas {
     font-size: 14px;
 }
 
+.edit-window input[type="file"] {
+    position: absolute;
+    visibility: hidden;
+    overflow: hidden;
+}
+
+.edit-window .fa-camera:active {
+    color: var(--color-black);
+}
+
 .edit-window input[type="submit"] {
     bottom: 5px;
     box-sizing: border-box;
@@ -178,6 +192,10 @@ nav .fas {
     background-color: var(--color-green);
     text-align: center;
     font-weight: bold;
+}
+
+.edit-window input[type="submit"]:active {
+    background-color: var(--color-yellow);
 }
 
 /* page styles */
@@ -203,10 +221,15 @@ nav .fas {
     overflow: hidden;
 }
 
+
 .profile_image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+
+.profile_image input[type="file"] {
+    visibility: hidden;
 }
 
 .profile .info {
