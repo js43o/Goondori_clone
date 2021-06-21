@@ -36,8 +36,13 @@ html, body {
 
 .main {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
+}
+
+.page {
+    width: 100%;
+    flex-shrink: 0;
 }
 
 header .fa-bars {

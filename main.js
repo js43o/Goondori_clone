@@ -67,6 +67,7 @@ const getFilePath = input => {
     if (input.files.length === 0) return null;
     let file = input.files[0];
     if (validFileType(file)) return URL.createObjectURL(file);
+    else return null;
 }
 
 const validFileType = file => {
@@ -89,10 +90,10 @@ function setUser(user, name, startDate, endDate, imgSrc, armyType) {
     // main values
     user.name = name;
     user.startDate = startDate;
-    user.endDate = endDate ? endDate : addDate(user.startDate, 0, sum(PERIODS[armyType]), -1);
+    user.endDate = endDate || addDate(user.startDate, 0, sum(PERIODS[armyType]), -1);
     user.armyType = armyType;
     user.period = PERIODS[armyType];
-    if (imgSrc) user.imgSrc = imgSrc;
+    user.imgSrc = imgSrc || user.imgSrc;
 
     // rank-date
     user.rankDate = [ new Date(user.startDate) ];
@@ -263,7 +264,7 @@ document.querySelector('#edit-open-button').onpointerdown = () => {
         setUser(users[currentIndex], form.name.value,
             new Date(`${form['start-date'].value}`),
             new Date(`${form['end-date'].value}`),
-            getFilePath(form.image),
+            getFilePath(form['upload-image']),
             form['army-type'].value);
 
         parseUserToPage(users[currentIndex], pages[currentIndex]);
@@ -272,8 +273,12 @@ document.querySelector('#edit-open-button').onpointerdown = () => {
     }
 }
 
-// profile image event (writning...)
-
+// profile image event
+let changing = document.querySelectorAll('input[name="change-image"]')[currentIndex];
+changing.onchange = () => {
+    users[currentIndex].imgSrc = getFilePath(changing) || users[currentIndex].imgSrc;
+    pages[currentIndex].querySelector('.profile_image img').src = users[currentIndex].imgSrc;
+}
 
 const initializeForm = (user, form) => {
     form.name.value = user.name;

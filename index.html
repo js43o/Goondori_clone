@@ -42,10 +42,10 @@
                         </select>
                     </li>
                     <li>사진 변경하기
-                        <label for="upload-image">
+                        <label>
                             <i class="fas fa-camera"></i>
+                            <input name="upload-image" type="file" accept="image/*">
                         </label>
-                        <input name="image" id="upload-image" type="file">
                     </li>
                     <li>전역일 조정<input name="end-date" type="date" min="1950-01-01" required></li>
                 </ul>
@@ -53,13 +53,14 @@
             </form>
         </div>
         <section class="main">
+            
             <div id="user1" class="page">
                 <div class="profile">
                     <div class="profile_image">
-                        <label for="change-image">
+                        <label>
                             <img src="" alt="profile_image">
+                            <input name="change-image" type="file" accept="image/*">
                         </label>
-                        <input name="image" id="change-image" type="file">
                     </div>
                     <div class="info">
                         <span class="rank"></span> <span class="name" style="font-weight: bold"></span>
@@ -114,6 +115,7 @@
                     <div><b>다음 진급일</b><span class="next-rank-day"></span></div>
                 </div>
             </div>
+
         </section>
     </body>
 
