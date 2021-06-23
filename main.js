@@ -23,6 +23,9 @@ let currentIndex = 0;
 let users = [];
 let pages = [];
 
+document.ondragstart = () => false;
+document.onselectstart = () => false;
+document.oncontextmenu = () => false;
 
 /* utility functions */
 
@@ -128,6 +131,13 @@ function setUser(user, name, startDate, endDate, imgSrc, armyType) {
     user.nextRankDate = user.rankIndex >= 3 ? user.endDate : user.rankDate[user.rankIndex + 1];
 
     updatePrgoress(user);
+
+    user.fullDay = Math.ceil((user.endDate - user.startDate) / MS_TO_DATE) + 1;
+    user.currentDay = user.rankIndex < 4 ? Math.ceil((new Date() - user.startDate) / MS_TO_DATE) : user.fullDay;
+    user.remainingDay = user.fullDay - user.currentDay;
+    user.nextRankDay = user.rankIndex < 4 ? Math.ceil((user.nextRankDate - new Date()) / MS_TO_DATE) : 0;
+
+    console.table(user);
 }
 
 
@@ -170,11 +180,10 @@ function parseUserToPage(user, page) {
     parseProgressToPage(user, page);
 
     // days values
-    let fullDay = Math.ceil((user.endDate - user.startDate) / MS_TO_DATE) + 1;
-    parseValueToQuery(fullDay, '.full-day', page);
-    parseValueToQuery(user.rankIndex < 4 ? Math.ceil((new Date() - user.startDate) / MS_TO_DATE) : fullDay, '.current-day', page);
-    parseValueToQuery(fullDay - +page.querySelector('.current-day').textContent, '.remaining-day', page);
-    parseValueToQuery(user.rankIndex < 4 ? Math.ceil((user.nextRankDate - new Date()) / MS_TO_DATE) : 0, '.next-rank-day', page);
+    parseValueToQuery(user.fullDay, '.full-day', page);
+    parseValueToQuery(user.currentDay, '.current-day', page);
+    parseValueToQuery(user.remainingDay, '.remaining-day', page);
+    parseValueToQuery(user.nextRankDay, '.next-rank-day', page);
 }
 
 
@@ -206,20 +215,19 @@ function parseProgressToPage(user, page) {
 /* event & form functions */
 
 
-// menu button event
-let menuOpenButton = document.querySelector('#menu-open-button');
-menuOpenButton.onpointerdown = () => {
+// menu event
+let black = document.querySelector('.black');
+let menu = document.querySelector('.menu');
+let menuClose = document.querySelector('#menu-close');
+let menuOpen = document.querySelector('#menu-open');
+menuOpen.onpointerdown = () => {
 
-    menuOpenButton.onpointerup = () => {
-        let menu = document.querySelector('.menu');
+    menuOpen.onpointerup = () => {
         menu.classList.add('active');
-
-        let black = document.querySelector('.black');
         black.classList.add('active');
 
-        let menuCloseButton = menu.querySelector('#menu-close-button');
-        menuCloseButton.onpointerdown = () => {
-            menuCloseButton.onpointerup = () => {
+        menuClose.onpointerdown = () => {
+            menuClose.onpointerup = () => {
                 menu.classList.remove('active');
                 black.classList.remove('active');
             }
@@ -227,16 +235,16 @@ menuOpenButton.onpointerdown = () => {
     }
 }
 
-// edit button event
-let editOpenButton = document.querySelector('#edit-open-button');
-editOpenButton.onpointerdown = () => {
-    editOpenButton.onpointerup = () => {
-        let editWindow = document.querySelector('.edit-window');
+// edit window open
+let editOpen = document.querySelector('#edit-open');
+let editClose = document.querySelector('#edit-close');
+let editWindow = document.querySelector('.edit-window');
+editOpen.onpointerdown = () => {
+    editOpen.onpointerup = () => {
         editWindow.classList.add('active');
 
-        let editCloseButton = editWindow.querySelector('#edit-close-button');
-        editCloseButton.onpointerdown = () => {
-            editCloseButton.onpointerup = () => {
+        editClose.onpointerdown = () => {
+            editClose.onpointerup = () => {
                 editWindow.classList.remove('active');
             }
         }
@@ -292,6 +300,32 @@ let changing = document.querySelectorAll('input[name="change-image"]')[currentIn
 changing.onchange = () => {
     users[currentIndex].imgSrc = getFilePath(changing) || users[currentIndex].imgSrc;
     pages[currentIndex].querySelector('.profile_image img').src = users[currentIndex].imgSrc;
+}
+
+// user-list open
+let userListOpen = document.querySelector('#user-list-open');
+let userListWindow = document.querySelector('.user-list');
+let userListClose = document.querySelector('#user-list-close');
+userListOpen.onpointerdown = () => {
+    userListOpen.onpointerup = () => {
+        userListWindow.classList.add('active');
+
+        let ul = userListWindow.querySelector('ul');
+        for (let user of users) {
+            let li = document.createElement('li');
+            li.innerHTML = `<div><i class="fas ${RANK_MARK[user.rankIndex]}"></i> ${user.name}</div>
+            <div><i class="fas fa-home">${user.mainProgress.toFixed(0)}%</i> D-${user.remainingDay}</div>
+            `;
+            ul.append(li);
+        }
+
+        userListClose.onpointerdown = () => {
+            userListClose.onpointerup = () => {
+                ul.innerHTML = "";
+                userListWindow.classList.remove('active');
+            }
+        }
+    }
 }
 
 const initializeForm = (user, form) => {

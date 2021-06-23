@@ -16,20 +16,21 @@
 
     <body>
         <div class="black"></div>
-        <nav>
-            <i id="menu-open-button" class="fas fa-bars"></i>
-            <i id="edit-open-button" class="fas fa-pencil-alt"></i>
-        </nav>
+        <header>
+            <i id="menu-open" class="fas fa-bars"></i>
+            <i id="edit-open" class="fas fa-pencil-alt"></i>
+        </header>
+
         <div class="menu" data-theme="darker">
             <ul>
-                <li id="menu-close-button" class="fas fa-times"></li>
-                <li>사용자 관리</li>
-                <li>환경설정</li>
+                <li id="menu-close" class="fas fa-times"></li>
+                <li id="user-list-open">사용자 관리</li>
+                <li id="settings-open">환경설정</li>
                 <li>goondori<i class="fas fa-bars" style="color: var(--color-green)"></i></li>
             </ul>
         </div>
         <div class="edit-window" data-theme="darker">
-            <i id="edit-close-button" class="fas fa-chevron-left"></i>
+            <i id="edit-close" class="fas fa-chevron-left"></i>
             <form name="user-info">
                 <ul>
                     <li>이름<input name="name" type="text" maxlength="8"></li>
@@ -52,6 +53,17 @@
                 <input name="submit" type="submit" value="수정하기">
             </form>
         </div>
+
+        <div class="user-list" data-theme="darker">
+            <nav>
+                <i id="user-list-close" class="fas fa-chevron-left"></i>
+                <span>사용자 관리</span>
+                <i id="user-list-add" class="fas fa-plus"></i>
+            </nav>
+            <ul>
+            </ul>
+        </div>
+
         <section class="main">
             
             <div id="user1" class="page">
