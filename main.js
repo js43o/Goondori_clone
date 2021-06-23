@@ -17,7 +17,7 @@ const fileTypes = [
     "image/tiff",
     "image/webp",
     "image/x-icon"
-  ];
+];
 
 let currentIndex = 0;
 let users = [];
@@ -96,7 +96,7 @@ function setUser(user, name, startDate, endDate, imgSrc, armyType) {
     user.imgSrc = imgSrc || user.imgSrc;
 
     // rank-date
-    user.rankDate = [ new Date(user.startDate) ];
+    user.rankDate = [new Date(user.startDate)];
     let acc = 0;
 
     for (let i of user.period.slice(0, -1)) {
@@ -197,9 +197,9 @@ function parseProgressToPage(user, page) {
             if (getLeft(percents[i]) + getWidth(percents[i]) > getLeft(bars[i].parentElement) + getWidth(bars[i].parentElement))
                 percents[i].style.left = getWidth(bars[i].parentElement) - getWidth(percents[i]) + 'px';
         }
-        
+
     }, 50);
-    
+
 }
 
 
@@ -207,70 +207,84 @@ function parseProgressToPage(user, page) {
 
 
 // menu button event
-document.querySelector('#menu-open-button').onpointerdown = () => {
-    let menu = document.querySelector('.menu');
-    menu.classList.add('active');
+let menuOpenButton = document.querySelector('#menu-open-button');
+menuOpenButton.onpointerdown = () => {
 
-    let black = document.querySelector('.black');
-    black.classList.add('active');
+    menuOpenButton.onpointerup = () => {
+        let menu = document.querySelector('.menu');
+        menu.classList.add('active');
 
-    menu.querySelector('#menu-close-button').onpointerdown = () => {
-        menu.classList.remove('active');
-        black.classList.remove('active');
+        let black = document.querySelector('.black');
+        black.classList.add('active');
+
+        let menuCloseButton = menu.querySelector('#menu-close-button');
+        menuCloseButton.onpointerdown = () => {
+            menuCloseButton.onpointerup = () => {
+                menu.classList.remove('active');
+                black.classList.remove('active');
+            }
+        }
     }
 }
 
 // edit button event
-document.querySelector('#edit-open-button').onpointerdown = () => {
-    let editWindow = document.querySelector('.edit-window');
-    editWindow.classList.add('active');
+let editOpenButton = document.querySelector('#edit-open-button');
+editOpenButton.onpointerdown = () => {
+    editOpenButton.onpointerup = () => {
+        let editWindow = document.querySelector('.edit-window');
+        editWindow.classList.add('active');
 
-    editWindow.querySelector('#edit-close-button').onpointerdown = () => {
-        editWindow.classList.remove('active');
-    }
-    
-    let form = document.forms['user-info'];
+        let editCloseButton = editWindow.querySelector('#edit-close-button');
+        editCloseButton.onpointerdown = () => {
+            editCloseButton.onpointerup = () => {
+                editWindow.classList.remove('active');
+            }
+        }
 
-    initializeForm(users[currentIndex], form);
+        let form = document.forms['user-info'];
 
-    // set end-date by army-type
-    form['army-type'].onchange = event => {
-        switch(form['army-type'].value) {
-            case 'army':
-                form['end-date'].value = dateToString(
-                addDate(new Date(form['start-date'].value), 0, 18, -1));
-                break;
-            case 'navy':
-                form['end-date'].value = dateToString(
-                addDate(new Date(form['start-date'].value), 0, 20, -1));
-                break;
-            case 'airforce':
-                form['end-date'].value = dateToString(
-                addDate(new Date(form['start-date'].value), 0, 21, -1));
-                break;
+        initializeForm(users[currentIndex], form);
+
+        // set end-date by army-type
+        form['army-type'].onchange = event => {
+            switch (form['army-type'].value) {
+                case 'army':
+                    form['end-date'].value = dateToString(
+                        addDate(new Date(form['start-date'].value), 0, 18, -1));
+                    break;
+                case 'navy':
+                    form['end-date'].value = dateToString(
+                        addDate(new Date(form['start-date'].value), 0, 20, -1));
+                    break;
+                case 'airforce':
+                    form['end-date'].value = dateToString(
+                        addDate(new Date(form['start-date'].value), 0, 21, -1));
+                    break;
+            }
+        }
+
+        // submit action
+        form.onsubmit = event => {
+            event.preventDefault();
+
+            if (form['start-date'].value > form['end-date'].value) {
+                alert("시작일이 종료일보다 클 수 없습니다.");
+                form['start-date'].focus();
+                return false;
+            }
+
+            setUser(users[currentIndex], form.name.value,
+                new Date(`${form['start-date'].value}`),
+                new Date(`${form['end-date'].value}`),
+                getFilePath(form['upload-image']),
+                form['army-type'].value);
+
+            parseUserToPage(users[currentIndex], pages[currentIndex]);
+
+            editWindow.classList.remove('active');
         }
     }
 
-    // submit action
-    form.onsubmit = event => {
-        event.preventDefault();
-
-        if (form['start-date'].value > form['end-date'].value) {
-            alert("시작일이 종료일보다 클 수 없습니다.");
-            form['start-date'].focus();
-            return false;
-        }
-
-        setUser(users[currentIndex], form.name.value,
-            new Date(`${form['start-date'].value}`),
-            new Date(`${form['end-date'].value}`),
-            getFilePath(form['upload-image']),
-            form['army-type'].value);
-
-        parseUserToPage(users[currentIndex], pages[currentIndex]);
-
-        editWindow.querySelector('#edit-close-button').onpointerdown();
-    }
 }
 
 // profile image event
@@ -291,5 +305,5 @@ const initializeForm = (user, form) => {
 
 // initial execution
 pages.push(document.querySelector('#user1'));
-addUser('군돌이', new Date(2020, 2, 9), null, 'kiwi.jpeg', 'airforce');
+addUser('군돌이', new Date(2020, 2, 9), null, 'images/kiwi.jpg', 'airforce');
 parseUserToPage(users[currentIndex], pages[currentIndex]);
