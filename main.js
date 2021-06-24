@@ -136,8 +136,6 @@ function setUser(user, name, startDate, endDate, imgSrc, armyType) {
     user.currentDay = user.rankIndex < 4 ? Math.ceil((new Date() - user.startDate) / MS_TO_DATE) : user.fullDay;
     user.remainingDay = user.fullDay - user.currentDay;
     user.nextRankDay = user.rankIndex < 4 ? Math.ceil((user.nextRankDate - new Date()) / MS_TO_DATE) : 0;
-
-    console.table(user);
 }
 
 
@@ -215,11 +213,12 @@ function parseProgressToPage(user, page) {
 /* event & form functions */
 
 
-// menu-open
+// menu window open
 let black = document.querySelector('.black');
 let menuWindow = document.querySelector('.menu-window');
 let menuCloser = document.querySelector('#menu-close');
 let menuOpener = document.querySelector('#menu-open');
+
 const openMenuWindow = () => {
     menuWindow.classList.add('active');
     black.classList.add('active');
@@ -230,7 +229,6 @@ const closeMenuWindow = () => {
 }
 
 menuOpener.onpointerdown = () => {
-
     menuOpener.onpointerup = () => {
 
         openMenuWindow();
@@ -263,10 +261,19 @@ menuOpener.onpointerdown = () => {
     }
 }
 
-// edit-open
+// edit window open
 let editOpen = document.querySelector('#edit-open');
 let editClose = document.querySelector('#edit-close');
 let editWindow = document.querySelector('.edit-window');
+
+const initializeForm = (user, form) => {
+    form.name.value = user.name;
+    form['start-date'].value = dateToString(user.startDate);
+    form['start-date'].max = dateToString(new Date());
+    form['army-type'].value = user.armyType;
+    form['end-date'].value = dateToString(user.endDate);
+}
+
 editOpen.onpointerdown = () => {
     editOpen.onpointerup = () => {
         editWindow.classList.add('active');
@@ -324,44 +331,60 @@ editOpen.onpointerdown = () => {
 }
 
 // profile image event
-let changing = document.querySelectorAll('input[name="change-image"]')[currentIndex];
-changing.onchange = () => {
-    users[currentIndex].imgSrc = getFilePath(changing) || users[currentIndex].imgSrc;
-    pages[currentIndex].querySelector('.profile_image img').src = users[currentIndex].imgSrc;
+function addEventListenerToProfiles() {
+    let profiles = document.querySelectorAll('input[name="change-image"]');
+    let index = 0;
+
+    for (let profile of profiles) {
+        profile.onchange = () => {
+            users[index].imgSrc = getFilePath(profile) || users[index].imgSrc;
+            pages[index].querySelector('.profile_image img').src = users[index].imgSrc;
+        }
+        index++;
+    }
 }
+addEventListenerToProfiles();
+
 
 // user-list open
 let userListOpen = document.querySelector('#user-list-open');
 let userListWindow = document.querySelector('.user-list');
 let userListClose = document.querySelector('#user-list-close');
+
+const loadUserList = users => {
+    let ul = document.createElement('ul');
+
+    for (let user of users) {
+        let li = document.createElement('li');
+        li.innerHTML = `<div><i class="fas ${RANK_MARK[user.rankIndex]}"></i> ${user.name}</div>
+        <div><i class="fas fa-home">${user.mainProgress.toFixed(0)}%</i> D-${user.remainingDay}</div>`;
+
+        ul.append(li);
+    }
+    return ul;
+}
+
 userListOpen.onpointerdown = () => {
+
     userListOpen.onpointerup = () => {
         userListWindow.classList.add('active');
 
-        let ul = userListWindow.querySelector('ul');
-        for (let user of users) {
-            let li = document.createElement('li');
-            li.innerHTML = `<div><i class="fas ${RANK_MARK[user.rankIndex]}"></i> ${user.name}</div>
-            <div><i class="fas fa-home">${user.mainProgress.toFixed(0)}%</i> D-${user.remainingDay}</div>
-            `;
-            ul.append(li);
-        }
+        let ul = loadUserList(users);
+        userListWindow.append(ul);
 
         userListClose.onpointerdown = () => {
-            userListClose.onpointerup = () => {
-                ul.innerHTML = "";
-                userListWindow.classList.remove('active');
+            // 창이 이미 닫히는 동안에 이벤트가 재실행되는 것을 방지
+            if (userListWindow.classList.contains('active')) {
+
+                userListClose.onpointerup = () => {
+                    setTimeout(() => userListWindow.querySelector('ul').remove(), 200);
+                    userListWindow.classList.remove('active');
+
+                    userListClose.onpointerup = null;
+                }
             }
         }
     }
-}
-
-const initializeForm = (user, form) => {
-    form.name.value = user.name;
-    form['start-date'].value = dateToString(user.startDate);
-    form['start-date'].max = dateToString(new Date());
-    form['army-type'].value = user.armyType;
-    form['end-date'].value = dateToString(user.endDate);
 }
 
 
@@ -369,3 +392,4 @@ const initializeForm = (user, form) => {
 pages.push(document.querySelector('#user1'));
 addUser('군돌이', new Date(2020, 2, 9), null, 'images/kiwi.jpg', 'airforce');
 parseUserToPage(users[currentIndex], pages[currentIndex]);
+currentIndex++;
