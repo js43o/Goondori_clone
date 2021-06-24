@@ -24,6 +24,7 @@ html, body {
     font-family: 'Noto Sans KR', sans-serif;
     font-size: 12px;
     color: var(--color-black);
+    overflow: hidden;
 }
 
 .fas {
@@ -58,21 +59,23 @@ header .fas:active {
 
 /* menu styles */
 
-.menu {
+.menu-window {
     position: fixed;
     top: 0;
     left: -70%;
     z-index: 100;
     display: flex;
+    box-sizing: border-box;
     width: 60%;
     height: 100%;
     padding: 12px;
     font-size: 16px;
     font-weight: bold;
     transition: left 0.4s;
+    touch-action: none;
 }
 
-.menu.active {
+.menu-window.active {
     left: 0;
 }
 
@@ -84,18 +87,18 @@ header .fas:active {
     color: var(--color-black);
 }
 
-.menu ul {
+.menu-window ul {
     padding: 0;
     margin: 0;
 }
 
-.menu li {
+.menu-window li {
     list-style-type: none;
     margin-bottom: 8px;
     cursor: pointer;
 }
 
-.menu li:last-child {
+.menu-window li:last-child {
     position: fixed;
     bottom: 8px;
     font-family: 'Poppins', sans-serif;
@@ -231,7 +234,8 @@ header .fas:active {
     display: flex;
     justify-content: space-between;
     font-size: 16px;
-    font-weight: bold;
+    color: var(--color-black);
+    background-color: white;
 }
 
 .user-list nav * {
@@ -239,7 +243,9 @@ header .fas:active {
 }
 
 .user-list nav .fas {
+    color: var(--color-dark-brown);
     font-size: 20px;
+    line-height: 26px;
     cursor: pointer;
 }
 

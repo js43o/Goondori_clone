@@ -215,27 +215,55 @@ function parseProgressToPage(user, page) {
 /* event & form functions */
 
 
-// menu event
+// menu-open
 let black = document.querySelector('.black');
-let menu = document.querySelector('.menu');
-let menuClose = document.querySelector('#menu-close');
-let menuOpen = document.querySelector('#menu-open');
-menuOpen.onpointerdown = () => {
+let menuWindow = document.querySelector('.menu-window');
+let menuCloser = document.querySelector('#menu-close');
+let menuOpener = document.querySelector('#menu-open');
+const openMenuWindow = () => {
+    menuWindow.classList.add('active');
+    black.classList.add('active');
+}
+const closeMenuWindow = () => {
+    menuWindow.classList.remove('active');
+    black.classList.remove('active');
+}
 
-    menuOpen.onpointerup = () => {
-        menu.classList.add('active');
-        black.classList.add('active');
+menuOpener.onpointerdown = () => {
 
-        menuClose.onpointerdown = () => {
-            menuClose.onpointerup = () => {
-                menu.classList.remove('active');
-                black.classList.remove('active');
+    menuOpener.onpointerup = () => {
+
+        openMenuWindow();
+
+        black.onpointerdown = closeMenuWindow;
+
+        // menu dragging event
+        menuWindow.onpointerdown = event => {
+            let originX = event.clientX;
+
+            document.onpointermove = event => {
+                if (!event.target.closest('.menu-window')) return;
+                menuWindow.style.transform = `translate(${Math.min(event.clientX - originX, 0) + 'px'})`;
             }
+
+            document.onpointerup = event => {
+                // drageed to the left
+                if (event.clientX < originX) closeMenuWindow();
+
+                document.onpointermove = null;
+                document.onpointerup = null;
+
+                setTimeout(() => menuWindow.style.transform = '', 400);
+            }
+        }
+
+        menuCloser.onpointerdown = () => {
+            menuCloser.onpointerup = closeMenuWindow;
         }
     }
 }
 
-// edit window open
+// edit-open
 let editOpen = document.querySelector('#edit-open');
 let editClose = document.querySelector('#edit-close');
 let editWindow = document.querySelector('.edit-window');
