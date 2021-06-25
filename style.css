@@ -169,16 +169,18 @@ header .fas:active {
     justify-content: space-between;
     padding: 8px;
     margin: 0;
-    border-bottom: 2px solid var(--color-brown);
+    border-bottom: 2px solid var(--color-grey);
     list-style-type: none;
 }
 
 .edit-window ul input, select {
     border: none;
     color: white;
-    background-color: var(--color-dark-brown);
+    background-color: rgba(0,0,0,0);
+    width: 50%;
     text-align: right;
     text-align-last: right;
+    font-family: 'Noto Sans KR', sans-serif;
     font-size: 14px;
 }
 
@@ -207,6 +209,27 @@ header .fas:active {
 
 .edit-window input[type="submit"]:active {
     background-color: var(--color-yellow);
+}
+
+.themes {
+    display: flex;
+    flex-direction: row;
+    font-size: 12px;
+    font-weight: normal;
+    filter: grayscale(30%);
+}
+
+.themes table {
+    width: 60px;
+    height: 60px;
+    margin-right: 16px;
+    border-collapse:collapse;
+    border-spacing: 0;
+}
+
+.themes td {
+    width: 50%;
+    height: 50%;
 }
 
 /* user-list styles */
