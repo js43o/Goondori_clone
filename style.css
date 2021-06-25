@@ -24,7 +24,6 @@ html, body {
     font-family: 'Noto Sans KR', sans-serif;
     font-size: 12px;
     color: var(--color-black);
-    overflow: hidden;
 }
 
 .fas {

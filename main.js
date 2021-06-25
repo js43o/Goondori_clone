@@ -1,3 +1,67 @@
+const userPrototypeHTML = `
+<div id="" class="page">
+    <div class="profile">
+        <div class="profile_image">
+            <label>
+                <img src="" alt="profile_image">
+                <input name="change-image" type="file" accept="image/*">
+            </label>
+        </div>
+        <div class="info">
+            <span class="rank"></span> <span class="name" style="font-weight: bold"></span>
+            <br>
+            <br>입대<span style="color: var(--color-grey)">│</span><span class="start-date"></span>
+            <br>전역<span style="color: var(--color-grey)">│</span><span class="end-date"></span>
+        </div>
+    </div>
+    <div class="current" data-theme="darker">
+        <div class="home">
+            <i class="fas fa-home"></i>
+            D-<span class="remaining-day"></span>
+        </div>
+        <div class="level">
+            <i></i>
+            <span class="rank"></span> <span class="salary"></span>
+        </div>
+    </div>
+    <div class="progress">
+        <div class="progress_main" data-theme="dark">
+            <b>전역</b><span class="end-date-type" style="float: right"></span>
+            <div class="bar">
+                <div class="bar_filled"></div>
+            </div>
+            <span class="percent"></span>
+        </div>
+        <div class="sub-progress" data-theme="darker">
+            <div class="progress_salary">
+                <small class="next-salary-date" style="float: right"></small>
+                <br>
+                <b>다음 호봉</b><span class="next-salary" style="float: right"></span>
+                <div class="bar">
+                    <div class="bar_filled"></div>
+                </div>
+                <span class="percent"></span>
+            </div>
+            <div class="progress_rank">
+                <small class="next-rank-date" style="float: right"></small>
+                <br>
+                <b>다음 계급</b><span class="next-rank" style="float: right"></span>
+                <div class="bar">
+                    <div class="bar_filled"></div>
+                </div>
+                <span class="percent"></span>
+            </div>
+        </div>
+    </div>
+    <div class="days">
+        <div><b>전체 복무일</b><span class="full-day" style="float: right"></span></div>
+        <div><b>현재 복무일</b><span class="current-day"></span></div>
+        <div><b>남은 복무일</b><span class="remaining-day"></span></div>
+        <div><b>다음 진급일</b><span class="next-rank-day"></span></div>
+    </div>
+</div>
+`;
+
 const RANK = ['이병', '일병', '상병', '병장', '민간인'];
 const RANK_MARK = ['fa-minus', 'fa-equals', 'fa-bars', 'fa-align-justify', 'fa-grin-squint'];
 const MS_TO_DATE = 86400000;
@@ -23,9 +87,11 @@ let currentIndex = 0;
 let users = [];
 let pages = [];
 
+// prevent default events
 document.ondragstart = () => false;
 document.onselectstart = () => false;
 document.oncontextmenu = () => false;
+
 
 /* utility functions */
 
@@ -82,11 +148,30 @@ const validFileType = file => {
 
 
 function addUser(...info) {
-    let newUser = {};
-    setUser(newUser, ...info);
-    users.push(newUser);
+    let user = {};
+    setUser(user, ...info);
 
-    return newUser;
+    users.push(user);
+
+    return user;
+}
+
+function addPage(user) {
+    let html = userPrototypeHTML;
+    let id = users.indexOf(user);
+
+    let main = document.querySelector('.main');
+    main.insertAdjacentHTML('beforeend', html);
+
+    let elems = main.querySelectorAll('.page')
+    let page = elems[elems.length - 1]; // get the last page
+    page.id = id;
+    addProfileChanging(user,page);
+
+
+    pages.push(page);
+
+    return page;
 }
 
 function setUser(user, name, startDate, endDate, imgSrc, armyType) {
@@ -331,19 +416,15 @@ editOpen.onpointerdown = () => {
 }
 
 // profile image event
-function addEventListenerToProfiles() {
-    let profiles = document.querySelectorAll('input[name="change-image"]');
-    let index = 0;
+const addProfileChanging = (user, page) => {
+    let profile = page.querySelector('input[name="change-image"]');
 
-    for (let profile of profiles) {
-        profile.onchange = () => {
-            users[index].imgSrc = getFilePath(profile) || users[index].imgSrc;
-            pages[index].querySelector('.profile_image img').src = users[index].imgSrc;
-        }
-        index++;
+    profile.onchange = () => {
+
+        user.imgSrc = getFilePath(profile) || user.imgSrc;
+        page.querySelector('.profile_image img').src = user.imgSrc;
     }
 }
-addEventListenerToProfiles();
 
 
 // user-list open
@@ -389,7 +470,6 @@ userListOpen.onpointerdown = () => {
 
 
 // initial execution
-pages.push(document.querySelector('#user1'));
-addUser('군돌이', new Date(2020, 2, 9), null, 'images/kiwi.jpg', 'airforce');
-parseUserToPage(users[currentIndex], pages[currentIndex]);
-currentIndex++;
+let user_1 = addUser('군돌이', new Date(2020, 2, 9), null, 'images/kiwi.jpg', 'airforce');
+let page_1 = addPage(user_1);
+parseUserToPage(user_1, page_1);
