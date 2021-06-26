@@ -182,7 +182,7 @@ function setUser(user, name, startDate, endDate, imgSrc, armyType, theme) {
     user.armyType = armyType;
     user.period = PERIODS[armyType];
     user.imgSrc = imgSrc || user.imgSrc;
-    user.theme = theme || 'default';
+    user.theme = theme || user.theme;
 
     // rank-date
     user.rankDate = [new Date(user.startDate)];
@@ -441,6 +441,9 @@ editOpen.onpointerdown = () => {
         let themes = document.querySelectorAll('.themes table');
         let shift = themes[0].getBoundingClientRect().left; // table margin
         for (let theme of themes) {
+            if (theme.className == users[currentIndex].theme) {
+                checked.style.left = theme.getBoundingClientRect().left - shift + 'px';
+            }
             theme.onpointerdown = () => {
                 let pos = theme.getBoundingClientRect().left;
                 checked.style.left = pos - shift + 'px';
@@ -478,7 +481,6 @@ const addProfileChanging = (user, page) => {
     let profile = page.querySelector('input[name="change-image"]');
 
     profile.onchange = () => {
-
         user.imgSrc = getFilePath(profile) || user.imgSrc;
         page.querySelector('.profile_image img').src = user.imgSrc;
     }
@@ -504,8 +506,12 @@ const loadUserList = users => {
 }
 
 userListOpen.onpointerdown = () => {
+    // 창이 이미 열리는 동안에 이벤트가 재실행되는 것을 방지
+    if (userListWindow.classList.contains('active')) return;
+    console.log('OPEN');
 
     userListOpen.onpointerup = () => {
+        closeMenuWindow();
         userListWindow.classList.add('active');
 
         let ul = loadUserList(users);
@@ -523,11 +529,12 @@ userListOpen.onpointerdown = () => {
                 }
             }
         }
+        userListOpen.onpointerup = null;
     }
 }
 
 
 // initial execution
-let user_1 = addUser('군돌이', new Date(2020, 2, 9), null, 'images/kiwi.jpg', 'airforce', 'gold');
+let user_1 = addUser('군돌이', new Date(2020, 2, 9), null, 'images/kiwi.jpg', 'airforce', 'kiwi');
 let page_1 = addPage(user_1);
 parseUserToPage(user_1, page_1);
