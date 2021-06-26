@@ -14,7 +14,7 @@ const userPrototypeHTML = `
             <br>전역<span style="color: var(--color-grey)">│</span><span class="end-date"></span>
         </div>
     </div>
-    <div class="current" data-theme="darker">
+    <div class="current" data-theme="side">
         <div class="home">
             <i class="fas fa-home"></i>
             D-<span class="remaining-day"></span>
@@ -25,14 +25,14 @@ const userPrototypeHTML = `
         </div>
     </div>
     <div class="progress">
-        <div class="progress_main" data-theme="dark">
+        <div class="progress_main" data-theme="main">
             <b>전역</b><span class="end-date-type" style="float: right"></span>
             <div class="bar">
                 <div class="bar_filled"></div>
             </div>
             <span class="percent"></span>
         </div>
-        <div class="sub-progress" data-theme="darker">
+        <div class="progress_sub" data-theme="side">
             <div class="progress_salary">
                 <small class="next-salary-date" style="float: right"></small>
                 <br>
@@ -166,7 +166,7 @@ function addPage(user) {
     let elems = main.querySelectorAll('.page')
     let page = elems[elems.length - 1]; // get the last page
     page.id = id;
-    addProfileChanging(user,page);
+    addProfileChanging(user, page);
 
 
     pages.push(page);
@@ -174,7 +174,7 @@ function addPage(user) {
     return page;
 }
 
-function setUser(user, name, startDate, endDate, imgSrc, armyType) {
+function setUser(user, name, startDate, endDate, imgSrc, armyType, theme) {
     // main values
     user.name = name;
     user.startDate = startDate;
@@ -182,6 +182,7 @@ function setUser(user, name, startDate, endDate, imgSrc, armyType) {
     user.armyType = armyType;
     user.period = PERIODS[armyType];
     user.imgSrc = imgSrc || user.imgSrc;
+    user.theme = theme || 'default';
 
     // rank-date
     user.rankDate = [new Date(user.startDate)];
@@ -267,6 +268,49 @@ function parseUserToPage(user, page) {
     parseValueToQuery(user.currentDay, '.current-day', page);
     parseValueToQuery(user.remainingDay, '.remaining-day', page);
     parseValueToQuery(user.nextRankDay, '.next-rank-day', page);
+
+    // page theme setting
+    let progressMain = page.querySelector('.progress_main');
+    let current = page.querySelector('.current');
+    let progressSub = page.querySelector('.progress_sub');
+
+    const paintTheme = (current, progressMain, progressSub, mainColor, mainBarColor, sideColor, sideBarColor, emptyBarColor) => {
+        let progressSalary = progressSub.children[0];
+        let progressRank = progressSub.children[1];
+
+        current.style.backgroundColor = sideColor;
+        current.querySelector('.fa-home').style.color = mainBarColor;
+
+        progressMain.style.backgroundColor = mainColor;
+        progressMain.querySelector('.percent').style.color = mainBarColor;
+        progressMain.querySelector('.bar').style.backgroundColor = emptyBarColor;
+        progressMain.querySelector('.bar_filled').style.backgroundColor = mainBarColor;
+
+        progressSub.style.backgroundColor = sideColor;
+
+        progressSalary.querySelector('.percent').style.color = sideBarColor;
+        progressSalary.querySelector('.bar').style.backgroundColor = emptyBarColor;
+        progressSalary.querySelector('.bar_filled').style.backgroundColor = sideBarColor;
+
+        progressRank.querySelector('.percent').style.color = sideBarColor;
+        progressRank.querySelector('.bar').style.backgroundColor = emptyBarColor;
+        progressRank.querySelector('.bar_filled').style.backgroundColor = sideBarColor;
+    }
+
+    switch (user.theme) {
+        case 'kiwi':
+            paintTheme(current, progressMain, progressSub,
+                'var(--color-dark-green)', 'var(--color-yellow)', 'var(--color-green)', 'white', 'var(--color-light-green)');
+            break;
+        case 'gold':
+            paintTheme(current, progressMain, progressSub,
+                'var(--color-gold)', 'white', 'var(--color-dark-gold)', 'white', 'var(--color-light-gold)');
+            break;
+        default:
+            paintTheme(current, progressMain, progressSub,
+                'var(--color-brown)', 'var(--color-default-green)', 'var(--color-dark-brown)', 'var(--color-light-yellow)', 'var(--color-grey)');
+            break;
+    }
 }
 
 
@@ -391,6 +435,19 @@ editOpen.onpointerdown = () => {
             }
         }
 
+        // select page theme
+        let checkedTheme;
+        let checked = document.querySelector('.themes .checked');
+        let themes = document.querySelectorAll('.themes table');
+        let shift = themes[0].getBoundingClientRect().left; // table margin
+        for (let theme of themes) {
+            theme.onpointerdown = () => {
+                let pos = theme.getBoundingClientRect().left;
+                checked.style.left = pos - shift + 'px';
+                checkedTheme = theme.className;
+            }
+        }
+
         // submit action
         form.onsubmit = event => {
             event.preventDefault();
@@ -405,7 +462,8 @@ editOpen.onpointerdown = () => {
                 new Date(`${form['start-date'].value}`),
                 new Date(`${form['end-date'].value}`),
                 getFilePath(form['upload-image']),
-                form['army-type'].value);
+                form['army-type'].value,
+                checkedTheme);
 
             parseUserToPage(users[currentIndex], pages[currentIndex]);
 
@@ -470,6 +528,6 @@ userListOpen.onpointerdown = () => {
 
 
 // initial execution
-let user_1 = addUser('군돌이', new Date(2020, 2, 9), null, 'images/kiwi.jpg', 'airforce');
+let user_1 = addUser('군돌이', new Date(2020, 2, 9), null, 'images/kiwi.jpg', 'airforce', 'gold');
 let page_1 = addPage(user_1);
 parseUserToPage(user_1, page_1);

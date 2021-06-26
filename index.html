@@ -1,105 +1,109 @@
-    <!DOCTYPE html>
-    <html lang="ko">
+<!DOCTYPE html>
+<html lang="ko">
 
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta http-equiv="X-UA-Compatible" content="ie=edge">
-        <link rel="preconnect" href="https://fonts.gstatic.com">
-        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&family=Noto+Sans+KR:wght@400;700&display=swap"
-            rel="stylesheet">
-        <link rel="stylesheet" href="style.css">
-        <script src="https://kit.fontawesome.com/4b84bc570d.js" crossorigin="anonymous"></script>
-        <script src="main.js" defer></script>
-        <title>군돌이</title>
-    </head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&family=Noto+Sans+KR:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://kit.fontawesome.com/4b84bc570d.js" crossorigin="anonymous"></script>
+    <script src="main.js" defer></script>
+    <title>군돌이</title>
+</head>
 
-    <body>
-        <div class="black"></div>
-        <header>
-            <i id="menu-open" class="fas fa-bars"></i>
-            <i id="edit-open" class="fas fa-pencil-alt"></i>
-        </header>
+<body>
+    <div class="black"></div>
+    <header>
+        <i id="menu-open" class="fas fa-bars"></i>
+        <i id="edit-open" class="fas fa-pencil-alt"></i>
+    </header>
 
-        <div class="menu-window" data-theme="dark">
+    <div class="menu-window">
+        <ul>
+            <li id="menu-close" class="fas fa-times"></li>
+            <li id="user-list-open">사용자 관리</li>
+            <li id="settings-open">환경설정</li>
+            <li>goondori<i class="fas fa-bars" style="color: var(--color-green)"></i></li>
+        </ul>
+    </div>
+    <div class="edit-window">
+        <i id="edit-close" class="fas fa-chevron-left"></i>
+        <form name="user-info">
             <ul>
-                <li id="menu-close" class="fas fa-times"></li>
-                <li id="user-list-open">사용자 관리</li>
-                <li id="settings-open">환경설정</li>
-                <li>goondori<i class="fas fa-bars" style="color: var(--color-green)"></i></li>
-            </ul>
-        </div>
-        <div class="edit-window" data-theme="dark">
-            <i id="edit-close" class="fas fa-chevron-left"></i>
-            <form name="user-info">
-                <ul>
-                    <li>이름<input name="name" type="text" maxlength="8"></li>
-                    <li>입대일<input name="start-date" type="date" min="1950-01-01" required></li>
-                    <li>군별
-                        <select name="army-type">
-                            <option value="army">육군</option>
-                            <option value="navy">해군</option>
-                            <option value="airforce">공군</option>
-                        </select>
-                    </li>
-                    <li>사진 변경하기
-                        <label>
-                            <i class="fas fa-camera"></i>
-                            <input name="upload-image" type="file" accept="image/*">
-                        </label>
-                    </li>
-                    <li>전역일 조정<input name="end-date" type="date" min="1950-01-01" required></li>
-                </ul>
+                <li>이름<input name="name" type="text" maxlength="8"></li>
+                <li>입대일<input name="start-date" type="date" min="1950-01-01" required></li>
+                <li>군별
+                    <select name="army-type">
+                        <option value="army">육군</option>
+                        <option value="navy">해군</option>
+                        <option value="airforce">공군</option>
+                    </select>
+                </li>
+                <li>사진 변경하기
+                    <label>
+                        <i class="fas fa-camera"></i>
+                        <input name="upload-image" type="file" accept="image/*">
+                    </label>
+                </li>
+                <li>전역일 조정<input name="end-date" type="date" min="1950-01-01" required></li>
+                <li>테마 변경</li>
                 <div class="themes">
+                    <div class="checked">
+                        <i class="fas fa-check"></i>
+                    </div>
                     <table class="default">
                         <caption>기본</caption>
                         <tr>
-                            <td style="background-color: var(--color-black)"></td>
                             <td style="background-color: var(--color-dark-brown)"></td>
+                            <td style="background-color: var(--color-brown)"></td>
                         </tr>
                         <tr>
-                            <td style="background-color: var(--color-green)"></td>
-                            <td style="background-color: var(--color-yellow)"></td>
+                            <td style="background-color: var(--color-light-green)"></td>
+                            <td style="background-color: var(--color-light-yellow)"></td>
                         </tr>
                     </table>
-                    <table class="pink">
-                        <caption>파스텔핑크</caption>
+                    <table class="kiwi">
+                        <caption>키위</caption>
                         <tr>
-                            <td style="background-color:salmon"></td>
-                            <td style="background-color:rgb(255, 170, 142)"></td>
+                            <td style="background-color: var(--color-green)"></td>
+                            <td style="background-color:var(--color-dark-green)"></td>
                         </tr>
                         <tr>
-                            <td style="background-color: var(--color-dark-brown)"></td>
+                            <td style="background-color: var(--color-yellow)"></td>
                             <td style="background-color: white"></td>
                         </tr>
                     </table>
                     <table class="gold">
                         <caption>골드</caption>
                         <tr>
-                            <td style="background-color:rgb(224, 156, 54)"></td>
-                            <td style="background-color:rgb(230, 195, 82)"></td>
+                            <td style="background-color: var(--color-dark-gold)"></td>
+                            <td style="background-color: var(--color-gold)"></td>
                         </tr>
                         <tr>
-                            <td style="background-color: var(--color-yellow)"></td>
+                            <td style="background-color: white"></td>
                             <td style="background-color: white"></td>
                         </tr>
                     </table>
                 </div>
-                <input name="submit" type="submit" value="수정하기">
-            </form>
-        </div>
+            </ul>
+            <input name="submit" type="submit" value="수정하기">
+        </form>
+    </div>
 
-        <div class="user-list" data-theme="dark">
-            <nav>
-                <i id="user-list-close" class="fas fa-chevron-left"></i>
-                <b>사용자 관리</b>
-                <i id="user-list-add" class="fas fa-plus"></i>
-            </nav>
-        </div>
+    <div class="user-list">
+        <nav>
+            <i id="user-list-close" class="fas fa-chevron-left"></i>
+            <b>사용자 관리</b>
+            <i id="user-list-add" class="fas fa-plus"></i>
+        </nav>
+    </div>
 
-        <section class="main">
+    <section class="main">
 
-        </section>
-    </body>
+    </section>
+</body>
 
-    </html>
+</html>

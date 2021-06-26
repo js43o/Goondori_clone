@@ -1,21 +1,21 @@
 :root {
+    --color-black: #2f2f2f;
+    --color-light-grey: #e7e7e7;
+    --color-light-yellow: #faf4dc;
+    /* default theme */
     --color-brown: #53494a;
-    --color-dark-brown: #473d3e;
-    --color-black: #201c1c;
-    --color-green: #8ec9b1;
-    --color-grey: #7d7777;
-    --color-light-grey: #d8d1d1;
-    --color-yellow: #faf4de;
-}
-
-div[data-theme='dark'] {
-    color: white;
-    background-color: var(--color-brown);
-}
-
-div[data-theme='darker'] {
-    color: white;
-    background-color: var(--color-dark-brown);
+    --color-dark-brown: #463d3e;
+    --color-default-green: #91c8b1;
+    --color-grey: #746e6e;
+    /* kiwi theme */
+    --color-green: #96caa4;
+    --color-dark-green: #79bf8b;
+    --color-light-green: #b0d9bb;
+    --color-yellow: #f9eb88;
+    /* gold theme */
+    --color-gold: #e3c68c;
+    --color-dark-gold: #d2ab66;
+    --color-light-gold: #ead5aa;
 }
 
 html, body {
@@ -24,14 +24,6 @@ html, body {
     font-family: 'Noto Sans KR', sans-serif;
     font-size: 12px;
     color: var(--color-black);
-}
-
-.fas {
-    color: var(--color-yellow);
-}
-
-.fa-home {
-    color: var(--color-green);
 }
 
 .main {
@@ -68,6 +60,8 @@ header .fas:active {
     width: 60%;
     height: 100%;
     padding: 12px;
+    color: white;
+    background-color: var(--color-brown);
     font-size: 16px;
     font-weight: bold;
     transition: left 0.4s;
@@ -79,6 +73,7 @@ header .fas:active {
 }
 
 #menu-close {
+    color: var(--color-light-yellow);
     font-size: 20px;
 }
 
@@ -128,6 +123,9 @@ header .fas:active {
     box-sizing: border-box;
     width: 100%;
     height: 100%;
+    padding: 12px;
+    color: white;
+    background-color: var(--color-brown);
     font-size: 14px;
     transition: top 0.4s;
 }
@@ -137,16 +135,20 @@ header .fas:active {
 }
 
 .edit-window .fas {
+    color: var(--color-light-yellow);
     font-size: 20px;
     cursor: pointer;
 }
 
-#edit-close {
-    padding: 12px;
+.edit-window .fas:active {
+    color: var(--color-black);
 }
 
-#edit-close:active {
-    color: var(--color-black);
+#edit-close {
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 12px;
 }
 
 .edit-window form {
@@ -155,7 +157,7 @@ header .fas:active {
     justify-content: space-between;
     box-sizing: border-box;
     height: 90%;
-    padding: 12px;
+    margin-top: 12px;
     font-weight: bold;
 }
 
@@ -171,6 +173,11 @@ header .fas:active {
     margin: 0;
     border-bottom: 2px solid var(--color-grey);
     list-style-type: none;
+}
+
+.edit-window li:last-of-type {
+    border: none;
+    margin-bottom: 24px;
 }
 
 .edit-window ul input, select {
@@ -190,10 +197,6 @@ header .fas:active {
     overflow: hidden;
 }
 
-.edit-window .fa-camera:active {
-    color: var(--color-black);
-}
-
 .edit-window input[type="submit"] {
     bottom: 5px;
     box-sizing: border-box;
@@ -201,22 +204,35 @@ header .fas:active {
     height: 40px;
     border: none;
     color: var(--color-black);
-    background-color: var(--color-green);
+    background-color: var(--color-default-green);
     text-align: center;
     font-weight: bold;
     cursor: pointer;
 }
 
 .edit-window input[type="submit"]:active {
-    background-color: var(--color-yellow);
+    background-color: var(--color-light-yellow);
 }
 
 .themes {
     display: flex;
     flex-direction: row;
-    font-size: 12px;
-    font-weight: normal;
     filter: grayscale(30%);
+    cursor: pointer;
+}
+
+.themes .checked {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    width: 60px;
+    height: 60px;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.themes .checked .fas {
+    font-size: 24px;
 }
 
 .themes table {
@@ -225,6 +241,10 @@ header .fas:active {
     margin-right: 16px;
     border-collapse:collapse;
     border-spacing: 0;
+}
+
+.themes table caption {
+    caption-side: bottom;
 }
 
 .themes td {
@@ -242,6 +262,8 @@ header .fas:active {
     z-index: 100;
     width: 100%;
     height: 100%;
+    color: white;
+    background-color: var(--color-brown);
     visibility: hidden;
     opacity: 0;
     transition: visibility 0.2s, opacity 0.2s;
@@ -285,6 +307,14 @@ header .fas:active {
     font-size: 16px;
     font-weight: bold;
     list-style-type: none;
+}
+
+.user-list li .fas {
+    color: var(--color-light-yellow);
+}
+
+.user-list li .fa-home {
+    color: var(--color-default-green);
 }
 
 /* page styles */
@@ -340,10 +370,16 @@ header .fas:active {
     width: 80%;
     padding: 12px;
     border-radius: 8px 8px 0 0;
+    color: white;
     font-weight: bold;
 }
 
+.current .fas {
+    color: var(--color-light-yellow);
+}
+
 .progress {
+    color: white;
     width: 100%;
 }
 
@@ -356,10 +392,6 @@ small {
     top: 5px;
 }
 
-.bar {
-    background-color: var(--color-grey);
-}
-
 .progress_main {
     padding: 16px;
     overflow: hidden;
@@ -370,7 +402,7 @@ small {
     margin-top: 10px;
 }
 
-.sub-progress {
+.progress_sub {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -379,32 +411,28 @@ small {
     overflow: hidden;
 }
 
-.sub-progress .bar {
+.progress_sub .bar {
     height: 4px;
     margin-top: 10px;
 }
 
-.sub-progress .progress_salary, .progress_rank {
+.progress_sub .progress_salary, .progress_rank {
     width: 45%;
 }
 
 .progress_main .bar_filled {
     height: 100%;
-    background-color: var(--color-green);
 }
 
 .progress_main .percent {
-    color: var(--color-green);
     font-size: 11px;
 }
 
-.sub-progress .bar_filled {
+.progress_sub .bar_filled {
     height: 100%;
-    background-color: var(--color-yellow);
 }
 
-.sub-progress .percent {
-    color: var(--color-yellow);
+.progress_sub .percent {
     font-size: 10px;
 }
 
