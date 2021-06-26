@@ -439,14 +439,14 @@ editOpen.onpointerdown = () => {
         let checkedTheme;
         let checked = document.querySelector('.themes .checked');
         let themes = document.querySelectorAll('.themes table');
-        let shift = themes[0].getBoundingClientRect().left; // table margin
+        const SHIFT = themes[0].getBoundingClientRect().left; // table margin
         for (let theme of themes) {
             if (theme.className == users[currentIndex].theme) {
-                checked.style.left = theme.getBoundingClientRect().left - shift + 'px';
+                checked.style.left = theme.getBoundingClientRect().left - SHIFT + 'px';
             }
             theme.onpointerdown = () => {
                 let pos = theme.getBoundingClientRect().left;
-                checked.style.left = pos - shift + 'px';
+                checked.style.left = pos - SHIFT + 'px';
                 checkedTheme = theme.className;
             }
         }
@@ -497,8 +497,13 @@ const loadUserList = users => {
 
     for (let user of users) {
         let li = document.createElement('li');
-        li.innerHTML = `<div><i class="fas ${RANK_MARK[user.rankIndex]}"></i> ${user.name}</div>
-        <div><i class="fas fa-home">${user.mainProgress.toFixed(0)}%</i> D-${user.remainingDay}</div>`;
+        li.innerHTML = `<div class="user-item"><div><i class="fas ${RANK_MARK[user.rankIndex]}"></i> ${user.name}</div>
+        <div><i class="fas fa-home">${user.mainProgress.toFixed(0)}%</i> D-${user.remainingDay}</div></div>
+        <div class="edit"><i class="fas fa-pencil-alt"></i></div>
+        <div class="remove"><i class="fas fa-trash-alt"></i></div>`;
+
+        li.style.width = document.documentElement.clientWidth + 120 + 'px';
+        li.querySelector('.user-item').style.width = document.documentElement.clientWidth + 'px';
 
         ul.append(li);
     }
@@ -506,9 +511,7 @@ const loadUserList = users => {
 }
 
 userListOpen.onpointerdown = () => {
-    // 창이 이미 열리는 동안에 이벤트가 재실행되는 것을 방지
     if (userListWindow.classList.contains('active')) return;
-    console.log('OPEN');
 
     userListOpen.onpointerup = () => {
         closeMenuWindow();
@@ -517,16 +520,48 @@ userListOpen.onpointerdown = () => {
         let ul = loadUserList(users);
         userListWindow.append(ul);
 
-        userListClose.onpointerdown = () => {
-            // 창이 이미 닫히는 동안에 이벤트가 재실행되는 것을 방지
-            if (userListWindow.classList.contains('active')) {
+        Array.from(ul.querySelectorAll('li')).forEach((li, index) => {
+            // user item dragging
+            let userItem = li.querySelector('.user-item');
+            userItem.onpointerdown = event => {
+                let originX = event.clientX;
+                let shift;
 
-                userListClose.onpointerup = () => {
-                    setTimeout(() => userListWindow.querySelector('ul').remove(), 200);
-                    userListWindow.classList.remove('active');
-
-                    userListClose.onpointerup = null;
+                document.onpointermove = event => {
+                    if (!event.target.closest('.user-item')) return;
+                    
+                    shift = Math.min(Math.max(event.clientX - originX, -120), 0);
+                    li.style.transform = `translate(${shift}px)`;
                 }
+
+                document.onpointerup = event => {
+                    li.style.transform = shift <= -20 ? `translate(-120px)` : '';
+
+                    document.onpointermove = null;
+                    document.onpointerup = null;
+                }
+            }
+
+            // user edit
+            li.querySelector('.edit').onpointerdown = () => {
+                userListClose.onpointerdown();
+                userListClose.onpointerup();
+
+                currentIndex = index;
+
+                editOpen.onpointerdown();
+                editOpen.onpointerup();
+            }
+        });
+
+        userListClose.onpointerdown = () => {
+            if (!userListWindow.classList.contains('active')) return;
+
+            userListClose.onpointerup = () => {
+                setTimeout(() => userListWindow.querySelector('ul').remove(), 200);
+                userListWindow.classList.remove('active');
+
+                userListClose.onpointerup = null;
             }
         }
         userListOpen.onpointerup = null;

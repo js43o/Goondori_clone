@@ -306,21 +306,48 @@ header .fas:active {
 
 .user-list li {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 18px;
+    justify-items: center;
     border-bottom: 1px solid var(--color-grey);
+    box-sizing: border-box;
+    width: 100%;
     font-size: 16px;
     font-weight: bold;
     list-style-type: none;
+    touch-action: none;
+    transition: transform 0.2s;
 }
 
-.user-list li .fas {
+.user-list .user-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-sizing: border-box;
+    padding: 18px;
+
+}
+
+.user-list .user-item .fas {
     color: var(--color-light-yellow);
 }
 
-.user-list li .fa-home {
+.user-list .user-item .fa-home {
     color: var(--color-default-green);
+}
+
+.user-list .edit {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 60px;
+    background-color: var(--color-default-green);
+}
+
+.user-list .remove {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 60px;
+    background-color: var(--color-grey);
 }
 
 /* page styles */
