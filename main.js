@@ -471,6 +471,7 @@ editOpen.onpointerdown = () => {
             parseUserToPage(users[currentIndex], pages[currentIndex]);
 
             editWindow.classList.remove('active');
+            form['upload-image'].value = null;
         }
     }
 
@@ -483,6 +484,8 @@ const addProfileChanging = (user, page) => {
     profile.onchange = () => {
         user.imgSrc = getFilePath(profile) || user.imgSrc;
         page.querySelector('.profile_image img').src = user.imgSrc;
+
+        profile.value = null;
     }
 }
 
