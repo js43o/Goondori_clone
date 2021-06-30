@@ -166,6 +166,7 @@ function addPage(user) {
     let elems = main.querySelectorAll('.page')
     let page = elems[elems.length - 1]; // get the last page
     page.id = id;
+
     addProfileChangeListener(user, page);
 
     pages.push(page);
@@ -212,7 +213,7 @@ function setUser(user, name, startDate, endDate, imgSrc, armyType, theme) {
     if (user.endDate < new Date()) user.rankIndex = 4;
 
     // next-dates
-    user.nextSalaryDate = user.rankIndex == 4 ? user.lastSalaryDate : addDate(user.lastSalaryDate, 0, 1);
+    user.nextSalaryDate = user.rankIndex === 4 ? user.lastSalaryDate : addDate(user.lastSalaryDate, 0, 1);
     user.nextRankDate = user.rankIndex >= 3 ? user.endDate : user.rankDate[user.rankIndex + 1];
 
     updatePrgoress(user);
@@ -258,7 +259,7 @@ function parseUserToPage(user, page) {
         nextSalary = 1;
     }
     page.querySelector('.next-salary').textContent = user.rankIndex < 4 ?
-        `${RANK[nextRankIndex]} ${(nextRankIndex == 4 && nextSalary == 1) ? '' : nextSalary + '호봉'}` : '';
+        `${RANK[nextRankIndex]} ${(nextRankIndex === 4 && nextSalary === 1) ? '' : nextSalary + '호봉'}` : '';
 
     parseProgressToPage(user, page);
 
@@ -327,7 +328,7 @@ function parseProgressToPage(user, page) {
 
         for (let i = 0; i < 3; i++) {
             bars[i].style.width = `${progresses[i]}%`;
-            percents[i].textContent = `${progresses[i].toFixed(i == 0 ? 7 : 5)}%`;
+            percents[i].textContent = `${progresses[i].toFixed(i === 0 ? 7 : 5)}%`;
             percents[i].style.left = `${progresses[i]}%`;
             if (getLeft(percents[i]) + getWidth(percents[i]) > getLeft(bars[i].parentElement) + getWidth(bars[i].parentElement))
                 percents[i].style.left = getWidth(bars[i].parentElement) - getWidth(percents[i]) + 'px';
@@ -344,55 +345,55 @@ function parseProgressToPage(user, page) {
 // menu window open
 let black = document.querySelector('.black');
 let menuWindow = document.querySelector('.menu-window');
-let menuCloser = document.querySelector('#menu-close');
 let menuOpener = document.querySelector('#menu-open');
+let menuCloser = document.querySelector('#menu-close');
 
 const openMenuWindow = () => {
     menuWindow.classList.add('active');
     black.classList.add('active');
 }
+
 const closeMenuWindow = () => {
     menuWindow.classList.remove('active');
     black.classList.remove('active');
 }
 
-menuOpener.onpointerdown = () => {
-    menuOpener.onpointerup = () => {
+const menuDraggingAction = event => {
+    let originX = event.clientX;
 
-        openMenuWindow();
+    document.onpointermove = event => {
+        if (!event.target.closest('.menu-window')) return;
+        menuWindow.style.transform = `translate(${Math.min(event.clientX - originX, 0) + 'px'})`;
+    }
 
-        black.onpointerdown = closeMenuWindow;
+    document.onpointerup = event => {
+        // drageed to the left
+        if (event.clientX < originX) closeMenuWindow();
 
-        // menu dragging event
-        menuWindow.onpointerdown = event => {
-            let originX = event.clientX;
+        document.onpointermove = null;
+        document.onpointerup = null;
 
-            document.onpointermove = event => {
-                if (!event.target.closest('.menu-window')) return;
-                menuWindow.style.transform = `translate(${Math.min(event.clientX - originX, 0) + 'px'})`;
-            }
-
-            document.onpointerup = event => {
-                // drageed to the left
-                if (event.clientX < originX) closeMenuWindow();
-
-                document.onpointermove = null;
-                document.onpointerup = null;
-
-                setTimeout(() => menuWindow.style.transform = '', 400);
-            }
-        }
-
-        menuCloser.onpointerdown = () => {
-            menuCloser.onpointerup = closeMenuWindow;
-        }
+        setTimeout(() => menuWindow.style.transform = '', 400);
     }
 }
 
+menuOpener.onpointerdown = () => {
+    menuOpener.onpointerup = openMenuWindow;
+}
+
+menuWindow.onpointerdown = menuDraggingAction;
+
+black.onpointerdown = closeMenuWindow;
+
+menuCloser.onpointerdown = () => {
+    menuCloser.onpointerup = closeMenuWindow;
+}
+
+
 // edit window open
-let editOpen = document.querySelector('#edit-open');
-let editClose = document.querySelector('#edit-close');
 let editWindow = document.querySelector('.edit-window');
+let editOpener = document.querySelector('#edit-open');
+let editCloser = document.querySelector('#edit-close');
 
 const initializeForm = (user, form) => {
     form.name.value = user.name;
@@ -402,78 +403,93 @@ const initializeForm = (user, form) => {
     form['end-date'].value = dateToString(user.endDate);
 }
 
-editOpen.onpointerdown = () => {
-    editOpen.onpointerup = () => {
-        editWindow.classList.add('active');
+const openEditWindow = () => {
+    editWindow.classList.add('active');
+}
 
-        editClose.onpointerdown = () => {
-            editClose.onpointerup = () => {
-                editWindow.classList.remove('active');
-            }
-        }
+const closeEditWindow = () => {
+    editWindow.classList.remove('active');
+}
 
-        let form = document.forms['user-info'];
+const editOpenAction = () => {
+    openEditWindow();
 
-        initializeForm(users[currentIndex], form);
+    let form = document.forms['user-info'];
 
-        // set end-date by army-type
-        form['army-type'].onchange = event => {
-            switch (form['army-type'].value) {
-                case 'army':
-                    form['end-date'].value = dateToString(
-                        addDate(new Date(form['start-date'].value), 0, 18, -1));
-                    break;
-                case 'navy':
-                    form['end-date'].value = dateToString(
-                        addDate(new Date(form['start-date'].value), 0, 20, -1));
-                    break;
-                case 'airforce':
-                    form['end-date'].value = dateToString(
-                        addDate(new Date(form['start-date'].value), 0, 21, -1));
-                    break;
-            }
-        }
+    initializeForm(users[currentIndex], form);
 
-        // select page theme
-        let checkedTheme;
-        let checked = document.querySelector('.themes .checked');
-        let themes = document.querySelectorAll('.themes table');
-        const SHIFT = themes[0].getBoundingClientRect().left; // table margin
-        for (let theme of themes) {
-            if (theme.className == users[currentIndex].theme) {
-                checked.style.left = theme.getBoundingClientRect().left - SHIFT + 'px';
-            }
-            theme.onpointerdown = () => {
-                let pos = theme.getBoundingClientRect().left;
-                checked.style.left = pos - SHIFT + 'px';
-                checkedTheme = theme.className;
-            }
-        }
-
-        // submit action
-        form.onsubmit = event => {
-            event.preventDefault();
-
-            if (form['start-date'].value > form['end-date'].value) {
-                alert("시작일이 종료일보다 클 수 없습니다.");
-                form['start-date'].focus();
-                return false;
-            }
-
-            setUser(users[currentIndex], form.name.value,
-                new Date(`${form['start-date'].value}`),
-                new Date(`${form['end-date'].value}`),
-                getFilePath(form['upload-image']),
-                form['army-type'].value,
-                checkedTheme);
-
-            parseUserToPage(users[currentIndex], pages[currentIndex]);
-
-            editWindow.classList.remove('active');
-            form['upload-image'].value = null;
+    // set end-date by army-type
+    form['army-type'].onchange = event => {
+        switch (form['army-type'].value) {
+            case 'army':
+                form['end-date'].value = dateToString(
+                    addDate(new Date(form['start-date'].value), 0, 18, -1));
+                break;
+            case 'navy':
+                form['end-date'].value = dateToString(
+                    addDate(new Date(form['start-date'].value), 0, 20, -1));
+                break;
+            case 'airforce':
+                form['end-date'].value = dateToString(
+                    addDate(new Date(form['start-date'].value), 0, 21, -1));
+                break;
         }
     }
 
+    // select page theme
+    let checkedTheme;
+    let checked = document.querySelector('.themes .checked');
+    let themes = document.querySelectorAll('.themes table');
+    const SHIFT = themes[0].getBoundingClientRect().left; // table margin
+
+    for (let theme of themes) {
+        if (theme.className === users[currentIndex].theme) {
+            checked.style.left = theme.getBoundingClientRect().left - SHIFT + 'px';
+        }
+        theme.onpointerdown = () => {
+            let pos = theme.getBoundingClientRect().left;
+            checked.style.left = pos - SHIFT + 'px';
+            checkedTheme = theme.className;
+        }
+    }
+
+    // submit action
+    form.onsubmit = event => {
+        event.preventDefault();
+
+        if (form['start-date'].value > form['end-date'].value) {
+            alert("시작일이 종료일보다 클 수 없습니다.");
+            form['start-date'].focus();
+            return false;
+        }
+
+        setUser(users[currentIndex], form.name.value,
+            new Date(`${form['start-date'].value}`),
+            new Date(`${form['end-date'].value}`),
+            getFilePath(form['upload-image']),
+            form['army-type'].value,
+            checkedTheme);
+
+        parseUserToPage(users[currentIndex], pages[currentIndex]);
+
+        form['upload-image'].value = null;
+        closeEditWindow();
+
+        updateUserList();
+    }
+}
+
+const editCloseAction = () => {
+    closeEditWindow();
+    updateUserList();
+}
+
+editOpener.onpointerdown = () => {
+    editOpener.onpointerup = editOpenAction;
+}
+
+editCloser.onpointerdown = () => {
+    editCloser.onpointerup = editCloseAction;
 }
 
 // profile image event
@@ -490,10 +506,19 @@ const addProfileChangeListener = (user, page) => {
 
 
 // user-list open
-let userListOpen = document.querySelector('#user-list-open');
 let userListWindow = document.querySelector('.user-list');
-let userListClose = document.querySelector('#user-list-close');
+let userListOpener = document.querySelector('#user-list-open');
+let userListCloser = document.querySelector('#user-list-close');
 let userListAdd = document.querySelector('#user-list-add');
+let userListUl = userListWindow.querySelector('ul');
+
+const openUserListWindow = () => {
+    userListWindow.classList.add('active');
+}
+
+const closeUserListWindow = () => {
+    userListWindow.classList.remove('active');
+}
 
 const loadUserList = users => {
     let fragment = new DocumentFragment();
@@ -510,84 +535,88 @@ const loadUserList = users => {
 
         fragment.append(li);
     }
+
     return fragment;
 }
 
-userListOpen.onpointerdown = () => {
+const updateUserList = () => {
+    userListUl.innerHTML = '';
+    userListUl.append(loadUserList(users));
+
+    addDraggingListenerToUserList();
+    addEditListenerToUserList();
+}
+
+const addDraggingListenerToUserList = () => {
+    for (let li of userListUl.querySelectorAll('li')) {
+        let userItem = li.querySelector('.user-item');
+        userItem.onpointerdown = event => {
+            let originX = event.clientX;
+            let shift;
+
+            document.onpointermove = event => {
+                if (!event.target.closest('.user-item')) return;
+
+                shift = Math.min(Math.max(event.clientX - originX, -120), 0);
+                li.style.transform = `translate(${shift}px)`;
+            }
+
+            document.onpointerup = event => {
+                li.style.transform = shift <= -20 ? `translate(-120px)` : '';
+
+                document.onpointermove = null;
+                document.onpointerup = null;
+            }
+        }
+    }
+}
+
+const addEditListenerToUserList = () => {
+    Array.from(userListUl.querySelectorAll('li')).forEach((li, index) => {
+        li.querySelector('.edit').onpointerdown = () => {
+            currentIndex = index;
+            editOpenAction();
+        }
+    });
+}
+
+const userListOpenAction = () => {
     if (userListWindow.classList.contains('active')) return;
 
-    userListOpen.onpointerup = () => {
-        closeMenuWindow();
-        userListWindow.classList.add('active');
+    closeMenuWindow();
 
-        let ul = userListWindow.querySelector('ul');
-        ul.append(loadUserList(users));
+    openUserListWindow();
 
-        Array.from(ul.querySelectorAll('li')).forEach((li, index) => {
-            // user item dragging
-            let userItem = li.querySelector('.user-item');
-            userItem.onpointerdown = event => {
-                let originX = event.clientX;
-                let shift;
+    updateUserList();
+}
 
-                document.onpointermove = event => {
-                    if (!event.target.closest('.user-item')) return;
-                    
-                    shift = Math.min(Math.max(event.clientX - originX, -120), 0);
-                    li.style.transform = `translate(${shift}px)`;
-                }
+const userListCloseAction = () => {
+    if (!userListWindow.classList.contains('active')) return;
+    closeUserListWindow();
+    setTimeout(() => userListUl.innerHTML = '', 200);
+}
 
-                document.onpointerup = event => {
-                    li.style.transform = shift <= -20 ? `translate(-120px)` : '';
+const userAddingAction = () => {
+    let newUser = addUser('군돌이', new Date(dateToString(new Date())), null, 'images/kiwi.jpg', 'army', 'kiwi');
+    currentIndex = users.length - 1;
 
-                    document.onpointermove = null;
-                    document.onpointerup = null;
-                }
-            }
+    editOpenAction();
 
-            // user edit
-            li.querySelector('.edit').onpointerdown = () => {
-                userListClose.onpointerdown();
-                userListClose.onpointerup();
+    let newPage = addPage(newUser);
 
-                currentIndex = index;
+    parseUserToPage(newUser, newPage);
+}
 
-                editOpen.onpointerdown();
-                editOpen.onpointerup();
-            }
-        });
+userListCloser.onpointerdown = () => {
+    userListCloser.onpointerup = userListCloseAction;
+}
 
-        userListClose.onpointerdown = () => {
-            if (!userListWindow.classList.contains('active')) return;
+userListOpener.onpointerdown = () => {
+    userListOpener.onpointerup = userListOpenAction;
+}
 
-            userListClose.onpointerup = () => {
-                setTimeout(() => ul.innerHTML = '', 200);
-                userListWindow.classList.remove('active');
-
-                userListClose.onpointerup = null;
-            }
-        }
-
-        userListAdd.onpointerdown = () => {
-            userListAdd.onpointerup = () => {
-
-                currentIndex = users.length;
-                let newUser = addUser('군돌이', new Date(), null, 'images/kiwi.jpg', 'army', 'kiwi');  
-                
-                userListClose.onpointerdown();
-                userListClose.onpointerup();
-
-                editOpen.onpointerdown();
-                editOpen.onpointerup();
-                
-                let newPage = addPage(newUser);
-
-                parseUserToPage(newUser, newPage);
-            }
-        }
-
-        userListOpen.onpointerup = null;
-    }
+userListAdd.onpointerdown = () => {
+    userListAdd.onpointerup = userAddingAction;
 }
 
 

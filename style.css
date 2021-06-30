@@ -274,7 +274,7 @@ header .fas:active {
     height: 100%;
     color: white;
     background-color: var(--color-brown);
-    transition: top 0.4s
+    transition: top 0.4s;
 }
 
 .user-list.active {
