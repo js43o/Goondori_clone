@@ -1,4 +1,4 @@
-const userPrototypeHTML = `
+const USER_PROTOTYPE_HTML = `
 <div id="" class="page">
     <div class="profile">
         <div class="profile_image">
@@ -70,7 +70,7 @@ const PERIODS = {
     navy: [2, 6, 6, 5],
     airforce: [2, 6, 6, 7],
 };
-const fileTypes = [
+const FILE_TYPES = [
     "image/apng",
     "image/bmp",
     "image/gif",
@@ -140,7 +140,7 @@ const getFilePath = input => {
 }
 
 const validFileType = file => {
-    return fileTypes.includes(file.type);
+    return FILE_TYPES.includes(file.type);
 }
 
 
@@ -157,7 +157,7 @@ function addUser(...info) {
 }
 
 function addPage(user) {
-    let html = userPrototypeHTML;
+    let html = USER_PROTOTYPE_HTML;
     let id = users.indexOf(user);
 
     let main = document.querySelector('.main');
@@ -166,8 +166,7 @@ function addPage(user) {
     let elems = main.querySelectorAll('.page')
     let page = elems[elems.length - 1]; // get the last page
     page.id = id;
-    addProfileChanging(user, page);
-
+    addProfileChangeListener(user, page);
 
     pages.push(page);
 
@@ -478,7 +477,7 @@ editOpen.onpointerdown = () => {
 }
 
 // profile image event
-const addProfileChanging = (user, page) => {
+const addProfileChangeListener = (user, page) => {
     let profile = page.querySelector('input[name="change-image"]');
 
     profile.onchange = () => {
@@ -494,9 +493,10 @@ const addProfileChanging = (user, page) => {
 let userListOpen = document.querySelector('#user-list-open');
 let userListWindow = document.querySelector('.user-list');
 let userListClose = document.querySelector('#user-list-close');
+let userListAdd = document.querySelector('#user-list-add');
 
 const loadUserList = users => {
-    let ul = document.createElement('ul');
+    let fragment = new DocumentFragment();
 
     for (let user of users) {
         let li = document.createElement('li');
@@ -508,9 +508,9 @@ const loadUserList = users => {
         li.style.width = document.documentElement.clientWidth + 120 + 'px';
         li.querySelector('.user-item').style.width = document.documentElement.clientWidth + 'px';
 
-        ul.append(li);
+        fragment.append(li);
     }
-    return ul;
+    return fragment;
 }
 
 userListOpen.onpointerdown = () => {
@@ -520,8 +520,8 @@ userListOpen.onpointerdown = () => {
         closeMenuWindow();
         userListWindow.classList.add('active');
 
-        let ul = loadUserList(users);
-        userListWindow.append(ul);
+        let ul = userListWindow.querySelector('ul');
+        ul.append(loadUserList(users));
 
         Array.from(ul.querySelectorAll('li')).forEach((li, index) => {
             // user item dragging
@@ -561,18 +561,37 @@ userListOpen.onpointerdown = () => {
             if (!userListWindow.classList.contains('active')) return;
 
             userListClose.onpointerup = () => {
-                setTimeout(() => userListWindow.querySelector('ul').remove(), 200);
+                setTimeout(() => ul.innerHTML = '', 200);
                 userListWindow.classList.remove('active');
 
                 userListClose.onpointerup = null;
             }
         }
+
+        userListAdd.onpointerdown = () => {
+            userListAdd.onpointerup = () => {
+
+                currentIndex = users.length;
+                let newUser = addUser('군돌이', new Date(), null, 'images/kiwi.jpg', 'army', 'kiwi');  
+                
+                userListClose.onpointerdown();
+                userListClose.onpointerup();
+
+                editOpen.onpointerdown();
+                editOpen.onpointerup();
+                
+                let newPage = addPage(newUser);
+
+                parseUserToPage(newUser, newPage);
+            }
+        }
+
         userListOpen.onpointerup = null;
     }
 }
 
 
 // initial execution
-let user_1 = addUser('군돌이', new Date(2020, 2, 9), null, 'images/kiwi.jpg', 'airforce', 'kiwi');
-let page_1 = addPage(user_1);
-parseUserToPage(user_1, page_1);
+let defaultUser = addUser('군돌이', new Date(2020, 2, 9), null, 'images/kiwi.jpg', 'airforce', 'kiwi');
+let defaultPage = addPage(defaultUser);
+parseUserToPage(defaultUser, defaultPage);
