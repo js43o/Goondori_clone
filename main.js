@@ -226,11 +226,11 @@ function setUser(user, name, startDate, endDate, imgSrc, armyType, theme) {
 
 
 function updatePrgoress(user) {
-    user.updatingProgressId = setInterval(() => {
         user.mainProgress = Math.min(100, ((Date.now() - user.startDate) / (user.endDate - user.startDate)) * 100);
         user.salaryProgress = Math.min(100, ((Date.now() - user.lastSalaryDate) / (user.nextSalaryDate - user.lastSalaryDate)) * 100);
         user.rankProgress = Math.min(100, ((Date.now() - user.rankDate[user.rankIndex]) / (user.nextRankDate - user.rankDate[user.rankIndex])) * 100);
-    }, 50);
+
+        return [ user.mainProgress, user.salaryProgress, user.rankProgress ];
 }
 
 function parseUserToPage(user, page) {
@@ -313,7 +313,6 @@ function parseUserToPage(user, page) {
     }
 }
 
-
 function parseProgressToPage(user, page) {
 
     const getLeft = elem => elem.getBoundingClientRect().left;
@@ -322,9 +321,9 @@ function parseProgressToPage(user, page) {
     let bars = page.querySelectorAll('.bar_filled');
     let percents = page.querySelectorAll('.percent');
 
-    user.parsingProgressId = setInterval(() => {
+    user.progressTimer = setInterval(() => {
 
-        const progresses = [user.mainProgress, user.salaryProgress, user.rankProgress];
+        const progresses = updatePrgoress(user);
 
         for (let i = 0; i < 3; i++) {
             bars[i].style.width = `${progresses[i]}%`;
@@ -474,7 +473,7 @@ const editOpenAction = () => {
 
         form['upload-image'].value = null;
         closeEditWindow();
-
+        
         updateUserList();
     }
 }
@@ -597,7 +596,7 @@ const userListCloseAction = () => {
 }
 
 const userAddingAction = () => {
-    let newUser = addUser('군돌이', new Date(dateToString(new Date())), null, 'images/kiwi.jpg', 'army', 'kiwi');
+    let newUser = addUser('군돌이', new Date(dateToString(new Date())), null, 'images/kiwi.jpg', 'army');
     currentIndex = users.length - 1;
 
     editOpenAction();
@@ -605,6 +604,8 @@ const userAddingAction = () => {
     let newPage = addPage(newUser);
 
     parseUserToPage(newUser, newPage);
+
+
 }
 
 userListCloser.onpointerdown = () => {
