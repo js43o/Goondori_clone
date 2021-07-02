@@ -28,10 +28,12 @@ html, body {
 }
 
 .main {
+    position: relative;
+    left: 0px;
     display: flex;
     flex-direction: row;
     align-items: center;
-    transition: transform 0.4s;
+    transition: left 0.4s;
     touch-action: none;
 }
 

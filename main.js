@@ -84,6 +84,7 @@ const FILE_TYPES = [
 ];
 
 let currentIndex = 0;
+let currentPagePos = 0;
 let users = [];
 let pages = [];
 
@@ -168,6 +169,7 @@ function addPage(user) {
     page.id = id;
 
     addProfileChangeListener(user, page);
+    addDraggingListenerToPages();
 
     pages.push(page);
 
@@ -226,11 +228,11 @@ function setUser(user, name, startDate, endDate, imgSrc, armyType, theme) {
 
 
 function updateProgress(user) {
-        user.mainProgress = Math.min(100, ((Date.now() - user.startDate) / (user.endDate - user.startDate)) * 100);
-        user.salaryProgress = Math.min(100, ((Date.now() - user.lastSalaryDate) / (user.nextSalaryDate - user.lastSalaryDate)) * 100);
-        user.rankProgress = Math.min(100, ((Date.now() - user.rankDate[user.rankIndex]) / (user.nextRankDate - user.rankDate[user.rankIndex])) * 100);
+    user.mainProgress = Math.min(100, ((Date.now() - user.startDate) / (user.endDate - user.startDate)) * 100);
+    user.salaryProgress = Math.min(100, ((Date.now() - user.lastSalaryDate) / (user.nextSalaryDate - user.lastSalaryDate)) * 100);
+    user.rankProgress = Math.min(100, ((Date.now() - user.rankDate[user.rankIndex]) / (user.nextRankDate - user.rankDate[user.rankIndex])) * 100);
 
-        return [ user.mainProgress, user.salaryProgress, user.rankProgress ];
+    return [user.mainProgress, user.salaryProgress, user.rankProgress];
 }
 
 function parseUserToPage(user, page) {
@@ -339,6 +341,43 @@ function parseProgressToPage(user, page) {
 
 
 /* event & form functions */
+
+
+const addDraggingListenerToPages = () => {
+    let main = document.querySelector('.main');
+    
+    main.onpointerdown = event => {
+        main.classList.add('grabbed');
+
+        let originX = event.clientX;
+        let shift;
+        let pageWidth = document.documentElement.clientWidth;
+
+        document.onpointermove = event => {
+            if (!event.target.closest('.main')) return;
+
+            shift = originX - event.clientX;
+            main.style.left = `${currentPagePos - shift}px`;
+        }
+
+        document.onpointerup = () => {
+            main.classList.remove('grabbed');
+
+            if (shift >= 120 && currentIndex < pages.length - 1) {
+                currentPagePos -= pageWidth;
+                currentIndex++;
+
+            } else if (shift <= -120 && currentIndex > 0) {
+                currentPagePos += pageWidth;
+                currentIndex--;
+            }
+            main.style.left = `${currentPagePos}px`;
+
+            document.onpointermove = null;
+            document.onpointerup = null;
+        }
+    }
+}
 
 
 // menu window open
@@ -473,7 +512,7 @@ const editOpenAction = () => {
 
         form['upload-image'].value = null;
         closeEditWindow();
-        
+
         updateUserList();
     }
 }
@@ -559,22 +598,22 @@ const addDraggingListenerToUserList = () => {
                 if (!event.target.closest('.user-item')) return;
 
                 if (li.classList.contains('pushed')) {
-                    shift = Math.max(Math.min(event.clientX - originX, 120), 0);
-                    li.style.transform = `translate(${shift - 120}px)`;
+                    shift = Math.min(Math.max(originX - event.clientX, -120), 0);
+                    li.style.transform = `translate(${-120 - shift}px)`;
                 } else {
-                    shift = Math.min(Math.max(event.clientX - originX, -120), 0);
-                    li.style.transform = `translate(${shift}px)`;
+                    shift = Math.max(Math.min(originX - event.clientX, 120), 0);
+                    li.style.transform = `translate(${-shift}px)`;
                 }
             }
 
             document.onpointerup = () => {
                 li.classList.remove('grabbed');
                 li.style.transform = '';
-                
-                if (li.classList.contains('pushed') && shift >= 20) {
+
+                if (li.classList.contains('pushed') && shift <= -20) {
                     li.classList.remove('pushed');
-                } else if (!li.classList.contains('pushed') && shift <= -20) {
-                    li.classList.add('pushed'); 
+                } else if (!li.classList.contains('pushed') && shift >= 20) {
+                    li.classList.add('pushed');
                 }
 
                 document.onpointermove = null;
@@ -618,8 +657,6 @@ const userAddingAction = () => {
     let newPage = addPage(newUser);
 
     parseUserToPage(newUser, newPage);
-
-
 }
 
 userListCloser.onpointerdown = () => {
@@ -636,6 +673,14 @@ userListAdd.onpointerdown = () => {
 
 
 // initial execution
-let defaultUser = addUser('군돌이', new Date(2020, 2, 9), null, 'images/kiwi.jpg', 'airforce', 'kiwi');
+let defaultUser = addUser('군돌이', new Date(2020, 2, 9), null, 'images/kiwi.jpg', 'airforce');
 let defaultPage = addPage(defaultUser);
 parseUserToPage(defaultUser, defaultPage);
+
+let user2 = addUser('조기전역', new Date(2020, 2, 9), new Date(2021, 8, 20), 'images/sushi.jpg', 'airforce', 'gold');
+let page2 = addPage(user2);
+parseUserToPage(user2, page2);
+
+let user3 = addUser('군순이', new Date(2020, 7, 9), null, 'images/flower.jpg', 'army', 'kiwi');
+let page3 = addPage(user3);
+parseUserToPage(user3, page3);
