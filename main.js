@@ -216,7 +216,7 @@ function setUser(user, name, startDate, endDate, imgSrc, armyType, theme) {
     user.nextSalaryDate = user.rankIndex === 4 ? user.lastSalaryDate : addDate(user.lastSalaryDate, 0, 1);
     user.nextRankDate = user.rankIndex >= 3 ? user.endDate : user.rankDate[user.rankIndex + 1];
 
-    updatePrgoress(user);
+    updateProgress(user);
 
     user.fullDay = Math.ceil((user.endDate - user.startDate) / MS_TO_DATE) + 1;
     user.currentDay = user.rankIndex < 4 ? Math.ceil((new Date() - user.startDate) / MS_TO_DATE) : user.fullDay;
@@ -225,7 +225,7 @@ function setUser(user, name, startDate, endDate, imgSrc, armyType, theme) {
 }
 
 
-function updatePrgoress(user) {
+function updateProgress(user) {
         user.mainProgress = Math.min(100, ((Date.now() - user.startDate) / (user.endDate - user.startDate)) * 100);
         user.salaryProgress = Math.min(100, ((Date.now() - user.lastSalaryDate) / (user.nextSalaryDate - user.lastSalaryDate)) * 100);
         user.rankProgress = Math.min(100, ((Date.now() - user.rankDate[user.rankIndex]) / (user.nextRankDate - user.rankDate[user.rankIndex])) * 100);
@@ -274,29 +274,6 @@ function parseUserToPage(user, page) {
     let current = page.querySelector('.current');
     let progressSub = page.querySelector('.progress_sub');
 
-    const paintTheme = (current, progressMain, progressSub, mainColor, mainBarColor, sideColor, sideBarColor, emptyBarColor) => {
-        let progressSalary = progressSub.children[0];
-        let progressRank = progressSub.children[1];
-
-        current.style.backgroundColor = sideColor;
-        current.querySelector('.fa-home').style.color = mainBarColor;
-
-        progressMain.style.backgroundColor = mainColor;
-        progressMain.querySelector('.percent').style.color = mainBarColor;
-        progressMain.querySelector('.bar').style.backgroundColor = emptyBarColor;
-        progressMain.querySelector('.bar_filled').style.backgroundColor = mainBarColor;
-
-        progressSub.style.backgroundColor = sideColor;
-
-        progressSalary.querySelector('.percent').style.color = sideBarColor;
-        progressSalary.querySelector('.bar').style.backgroundColor = emptyBarColor;
-        progressSalary.querySelector('.bar_filled').style.backgroundColor = sideBarColor;
-
-        progressRank.querySelector('.percent').style.color = sideBarColor;
-        progressRank.querySelector('.bar').style.backgroundColor = emptyBarColor;
-        progressRank.querySelector('.bar_filled').style.backgroundColor = sideBarColor;
-    }
-
     switch (user.theme) {
         case 'kiwi':
             paintTheme(current, progressMain, progressSub,
@@ -313,6 +290,29 @@ function parseUserToPage(user, page) {
     }
 }
 
+const paintTheme = (current, progressMain, progressSub, mainColor, mainBarColor, sideColor, sideBarColor, emptyBarColor) => {
+    let progressSalary = progressSub.children[0];
+    let progressRank = progressSub.children[1];
+
+    current.style.backgroundColor = sideColor;
+    current.querySelector('.fa-home').style.color = mainBarColor;
+
+    progressMain.style.backgroundColor = mainColor;
+    progressMain.querySelector('.percent').style.color = mainBarColor;
+    progressMain.querySelector('.bar').style.backgroundColor = emptyBarColor;
+    progressMain.querySelector('.bar_filled').style.backgroundColor = mainBarColor;
+
+    progressSub.style.backgroundColor = sideColor;
+
+    progressSalary.querySelector('.percent').style.color = sideBarColor;
+    progressSalary.querySelector('.bar').style.backgroundColor = emptyBarColor;
+    progressSalary.querySelector('.bar_filled').style.backgroundColor = sideBarColor;
+
+    progressRank.querySelector('.percent').style.color = sideBarColor;
+    progressRank.querySelector('.bar').style.backgroundColor = emptyBarColor;
+    progressRank.querySelector('.bar_filled').style.backgroundColor = sideBarColor;
+}
+
 function parseProgressToPage(user, page) {
 
     const getLeft = elem => elem.getBoundingClientRect().left;
@@ -323,7 +323,7 @@ function parseProgressToPage(user, page) {
 
     user.progressTimer = setInterval(() => {
 
-        const progresses = updatePrgoress(user);
+        const progresses = updateProgress(user);
 
         for (let i = 0; i < 3; i++) {
             bars[i].style.width = `${progresses[i]}%`;
@@ -550,18 +550,32 @@ const addDraggingListenerToUserList = () => {
     for (let li of userListUl.querySelectorAll('li')) {
         let userItem = li.querySelector('.user-item');
         userItem.onpointerdown = event => {
+            li.classList.add('grabbed');
+
             let originX = event.clientX;
             let shift;
 
             document.onpointermove = event => {
                 if (!event.target.closest('.user-item')) return;
 
-                shift = Math.min(Math.max(event.clientX - originX, -120), 0);
-                li.style.transform = `translate(${shift}px)`;
+                if (li.classList.contains('pushed')) {
+                    shift = Math.max(Math.min(event.clientX - originX, 120), 0);
+                    li.style.transform = `translate(${shift - 120}px)`;
+                } else {
+                    shift = Math.min(Math.max(event.clientX - originX, -120), 0);
+                    li.style.transform = `translate(${shift}px)`;
+                }
             }
 
-            document.onpointerup = event => {
-                li.style.transform = shift <= -20 ? `translate(-120px)` : '';
+            document.onpointerup = () => {
+                li.classList.remove('grabbed');
+                li.style.transform = '';
+                
+                if (li.classList.contains('pushed') && shift >= 20) {
+                    li.classList.remove('pushed');
+                } else if (!li.classList.contains('pushed') && shift <= -20) {
+                    li.classList.add('pushed'); 
+                }
 
                 document.onpointermove = null;
                 document.onpointerup = null;

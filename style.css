@@ -31,6 +31,12 @@ html, body {
     display: flex;
     flex-direction: row;
     align-items: center;
+    transition: transform 0.4s;
+    touch-action: none;
+}
+
+.main.grabbed {
+    transition: none;
 }
 
 .page {
@@ -308,14 +314,22 @@ header .fas:active {
 .user-list li {
     display: flex;
     justify-items: center;
-    border-bottom: 1px solid var(--color-grey);
     box-sizing: border-box;
     width: 100%;
+    border-bottom: 1px solid var(--color-grey);
     font-size: 16px;
     font-weight: bold;
     list-style-type: none;
     touch-action: none;
     transition: transform 0.2s;
+}
+
+.user-list li.grabbed {
+    transition: none;
+}
+
+.user-list li.pushed {
+    transform: translate(-120px);
 }
 
 .user-list .user-item {
@@ -324,7 +338,6 @@ header .fas:active {
     align-items: center;
     box-sizing: border-box;
     padding: 18px;
-
 }
 
 .user-list .user-item .fas {
