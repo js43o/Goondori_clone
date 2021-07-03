@@ -358,12 +358,20 @@ header .fas:active {
     background-color: var(--color-default-green);
 }
 
+.user-list .edit:active {
+    background-color: var(--color-yellow);
+}
+
 .user-list .remove {
     display: flex;
     justify-content: center;
     align-items: center;
     width: 60px;
     background-color: var(--color-grey);
+}
+
+.user-list .remove:active {
+    background-color: var(--color-black)
 }
 
 /* page styles */

@@ -188,7 +188,7 @@ function setUser(user, name, startDate, endDate, imgSrc, armyType, theme) {
     user.armyType = armyType;
     user.period = PERIODS[armyType];
     user.imgSrc = imgSrc || user.imgSrc;
-    user.theme = theme || user.theme;
+    user.theme = theme || user.theme || 'default';
 
     // rank-date
     user.rankDate = [new Date(user.startDate)];
@@ -338,9 +338,7 @@ function parseProgressToPage(user, page) {
             if (getLeft(percents[i]) + getWidth(percents[i]) > getLeft(bars[i].parentElement) + getWidth(bars[i].parentElement))
                 percents[i].style.left = getWidth(bars[i].parentElement) - getWidth(percents[i]) + 'px';
         }
-
     }, 50);
-
 }
 
 
@@ -349,7 +347,7 @@ function parseProgressToPage(user, page) {
 
 const addDraggingListenerToPages = () => {
     let main = document.querySelector('.main');
-    
+
     main.onpointerdown = event => {
         main.classList.add('grabbed');
 
@@ -564,6 +562,7 @@ let userListWindow = document.querySelector('.user-list');
 let userListOpener = document.querySelector('#user-list-open');
 let userListCloser = document.querySelector('#user-list-close');
 let userListAdd = document.querySelector('#user-list-add');
+let userListRemove = document.querySelector('#user-list-add');
 let userListUl = userListWindow.querySelector('ul');
 
 const openUserListWindow = () => {
@@ -598,7 +597,7 @@ const updateUserList = () => {
     userListUl.append(loadUserList(users));
 
     addDraggingListenerToUserList();
-    addEditListenerToUserList();
+    addButtonListenerToUserItem();
 }
 
 const addDraggingListenerToUserList = () => {
@@ -639,12 +638,44 @@ const addDraggingListenerToUserList = () => {
     }
 }
 
-const addEditListenerToUserList = () => {
-    Array.from(userListUl.querySelectorAll('li')).forEach((li, index) => {
-        li.querySelector('.edit').onpointerdown = () => {
-            currentIndex = index;
-            movePageWithIndex(currentIndex);
-            editOpenAction();
+const addButtonListenerToUserItem = () => {
+    Array.from(userListUl.querySelectorAll('li')).forEach((li, li_index) => {
+        let edit = li.querySelector('.edit');
+        let remove = li.querySelector('.remove');
+
+        edit.onpointerdown = () => {
+            edit.onpointerup = () => {
+                currentIndex = li_index;
+                movePageWithIndex(currentIndex);
+                editOpenAction();
+
+                edit.onpointerup = null;
+            }
+        }
+        remove.onpointerdown = () => {
+            remove.onpointerup = () => {
+                if (!confirm('정말 삭제하시겠습니까?')) return;
+                if (users.length == 1) {
+                    alert('최소한 한 명 이상의 사용자가 있어야 합니다.');
+                    return;
+                }
+
+                li.remove();
+
+                Array.from(document.querySelectorAll('.page')).forEach((page, page_index) => {
+                    if (page_index == li_index) page.remove();
+                });
+
+                users.splice(li_index, 1);
+                pages.splice(li_index, 1);
+
+                currentIndex = Math.min(currentIndex, users.length - 1);
+                movePageWithIndex(currentIndex);
+
+                remove.onpointerup = null;
+
+                updateUserList();
+            }
         }
     });
 }
