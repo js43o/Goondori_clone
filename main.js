@@ -144,6 +144,10 @@ const validFileType = file => {
     return FILE_TYPES.includes(file.type);
 }
 
+const printPage = () => {
+    console.log(`page: ${currentIndex + 1}/${pages.length}`);
+}
+
 
 /* user & page setting functions */
 
@@ -357,21 +361,21 @@ const addDraggingListenerToPages = () => {
             if (!event.target.closest('.main')) return;
 
             shift = originX - event.clientX;
-            main.style.left = `${currentPagePos - shift}px`;
+            movePage(Math.max(Math.min(currentPagePos - shift, 0), -pageWidth * (pages.length - 1)));
         }
 
         document.onpointerup = () => {
             main.classList.remove('grabbed');
 
-            if (shift >= 120 && currentIndex < pages.length - 1) {
+            if (shift >= 40 && currentIndex < pages.length - 1) {
                 currentPagePos -= pageWidth;
                 currentIndex++;
 
-            } else if (shift <= -120 && currentIndex > 0) {
+            } else if (shift <= -40 && currentIndex > 0) {
                 currentPagePos += pageWidth;
                 currentIndex--;
             }
-            main.style.left = `${currentPagePos}px`;
+            movePage(currentPagePos);
 
             document.onpointermove = null;
             document.onpointerup = null;
@@ -379,6 +383,18 @@ const addDraggingListenerToPages = () => {
     }
 }
 
+const movePageWithIndex = index => {
+    let pageWidth = document.documentElement.clientWidth;
+
+    currentPagePos = -pageWidth * index;
+
+    movePage(currentPagePos);
+}
+
+const movePage = value => {
+    let main = document.querySelector('.main');
+    main.style.left = value + 'px';
+}
 
 // menu window open
 let black = document.querySelector('.black');
@@ -627,6 +643,7 @@ const addEditListenerToUserList = () => {
     Array.from(userListUl.querySelectorAll('li')).forEach((li, index) => {
         li.querySelector('.edit').onpointerdown = () => {
             currentIndex = index;
+            movePageWithIndex(currentIndex);
             editOpenAction();
         }
     });
@@ -651,7 +668,7 @@ const userListCloseAction = () => {
 const userAddingAction = () => {
     let newUser = addUser('군돌이', new Date(dateToString(new Date())), null, 'images/kiwi.jpg', 'army');
     currentIndex = users.length - 1;
-
+    movePageWithIndex(currentIndex);
     editOpenAction();
 
     let newPage = addPage(newUser);
