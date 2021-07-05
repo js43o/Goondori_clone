@@ -59,8 +59,7 @@ const USER_PROTOTYPE_HTML = `
         <div><b>남은 복무일</b><span class="remaining-day"></span></div>
         <div><b>다음 진급일</b><span class="next-rank-day"></span></div>
     </div>
-</div>
-`;
+</div>`;
 
 const RANK = ['이병', '일병', '상병', '병장', '민간인'];
 const RANK_MARK = ['fa-minus', 'fa-equals', 'fa-bars', 'fa-align-justify', 'fa-grin-squint'];
@@ -122,7 +121,6 @@ const dateToString = (date, delm = '-') => {
         '0' + (date.getMonth() + 1)}${delm}${date.getDate() > 9 ? date.getDate() : '0' + date.getDate()}`;
 }
 
-// 기존의 date 객체를 받아서 변형없이 새로운 date 객체를 반환
 const addDate = (date, y = 0, m = 0, d = 0) => {
     let res = new Date(date);
 
@@ -144,17 +142,24 @@ const validFileType = file => {
     return FILE_TYPES.includes(file.type);
 }
 
-const printPage = () => {
-    console.log(`page: ${currentIndex + 1}/${pages.length}`);
+const getDefaultUser = () => {
+    return {
+        name: '군돌이',
+        startDate: new Date(dateToString(new Date())),
+        endDate: null,
+        imgSrc: 'images/kiwi.jpg',
+        armyType: 'army',
+        theme: 'default'
+    };
 }
 
 
 /* user & page setting functions */
 
 
-function addUser(...info) {
+function addUser( info ) {
     let user = {};
-    setUser(user, ...info);
+    setUser(user, info);
 
     users.push(user);
 
@@ -180,7 +185,7 @@ function addPage(user) {
     return page;
 }
 
-function setUser(user, name, startDate, endDate, imgSrc, armyType, theme) {
+function setUser(user, { name, startDate, endDate, imgSrc, armyType, theme }) {
     // main values
     user.name = name;
     user.startDate = startDate;
@@ -282,21 +287,34 @@ function parseUserToPage(user, page) {
 
     switch (user.theme) {
         case 'kiwi':
-            paintTheme(current, progressMain, progressSub,
-                'var(--color-dark-green)', 'var(--color-yellow)', 'var(--color-green)', 'white', 'var(--color-light-green)');
+            paintTheme({ current, progressMain, progressSub },
+                { mainColor: 'var(--color-dark-green)',
+                mainBarColor: 'var(--color-yellow)',
+                sideColor: 'var(--color-green)',
+                sideBarColor: 'white',
+                emptyBarColor: 'var(--color-light-green)' });
             break;
         case 'gold':
-            paintTheme(current, progressMain, progressSub,
-                'var(--color-gold)', 'white', 'var(--color-dark-gold)', 'white', 'var(--color-light-gold)');
+            paintTheme({ current, progressMain, progressSub },
+                { mainColor: 'var(--color-gold)',
+                mainBarColor: 'white',
+                sideColor: 'var(--color-dark-gold)',
+                sideBarColor: 'white',
+                emptyBarColor: 'var(--color-light-gold)'});
             break;
         default:
-            paintTheme(current, progressMain, progressSub,
-                'var(--color-brown)', 'var(--color-default-green)', 'var(--color-dark-brown)', 'var(--color-light-yellow)', 'var(--color-grey)');
+            paintTheme({ current, progressMain, progressSub },
+                { mainColor: 'var(--color-brown)',
+                mainBarColor: 'var(--color-default-green)',
+                sideColor: 'var(--color-dark-brown)',
+                sideBarColor: 'var(--color-light-yellow)',
+                emptyBarColor: 'var(--color-grey)'});
             break;
     }
 }
 
-const paintTheme = (current, progressMain, progressSub, mainColor, mainBarColor, sideColor, sideBarColor, emptyBarColor) => {
+const paintTheme = ({ current, progressMain, progressSub },
+    { mainColor, mainBarColor, sideColor, sideBarColor, emptyBarColor }) => {
     let progressSalary = progressSub.children[0];
     let progressRank = progressSub.children[1];
 
@@ -327,7 +345,10 @@ function parseProgressToPage(user, page) {
     let bars = page.querySelectorAll('.bar_filled');
     let percents = page.querySelectorAll('.percent');
 
+    if (user.progressTimer) clearInterval(user.progressTimer);
     user.progressTimer = setInterval(() => {
+
+        console.log(user.name);
 
         const progresses = updateProgress(user);
 
@@ -338,7 +359,7 @@ function parseProgressToPage(user, page) {
             if (getLeft(percents[i]) + getWidth(percents[i]) > getLeft(bars[i].parentElement) + getWidth(bars[i].parentElement))
                 percents[i].style.left = getWidth(bars[i].parentElement) - getWidth(percents[i]) + 'px';
         }
-    }, 50);
+    }, 1000);
 }
 
 
@@ -514,13 +535,13 @@ const editOpenAction = () => {
             form['start-date'].focus();
             return false;
         }
-
-        setUser(users[currentIndex], form.name.value,
-            new Date(`${form['start-date'].value}`),
-            new Date(`${form['end-date'].value}`),
-            getFilePath(form['upload-image']),
-            form['army-type'].value,
-            checkedTheme);
+        setUser(users[currentIndex], {
+            name: form.name.value,
+            startDate: new Date(`${form['start-date'].value}`),
+            endDate: new Date(`${form['end-date'].value}`),
+            imgSrc: getFilePath(form['upload-image']),
+            armyType: form['army-type'].value,
+            theme: checkedTheme });
 
         parseUserToPage(users[currentIndex], pages[currentIndex]);
 
@@ -666,6 +687,7 @@ const addButtonListenerToUserItem = () => {
                     if (page_index == li_index) page.remove();
                 });
 
+                clearInterval(users[li_index].progressTimer);
                 users.splice(li_index, 1);
                 pages.splice(li_index, 1);
 
@@ -697,13 +719,14 @@ const userListCloseAction = () => {
 }
 
 const userAddingAction = () => {
-    let newUser = addUser('군돌이', new Date(dateToString(new Date())), null, 'images/kiwi.jpg', 'army');
+    let newUser = addUser(getDefaultUser());
     currentIndex = users.length - 1;
+
     movePageWithIndex(currentIndex);
+
     editOpenAction();
 
     let newPage = addPage(newUser);
-
     parseUserToPage(newUser, newPage);
 }
 
@@ -721,14 +744,14 @@ userListAdd.onpointerdown = () => {
 
 
 // initial execution
-let defaultUser = addUser('군돌이', new Date(2020, 2, 9), null, 'images/kiwi.jpg', 'airforce');
-let defaultPage = addPage(defaultUser);
-parseUserToPage(defaultUser, defaultPage);
+let user1 = addUser({ name: '군돌이', startDate: new Date(2020, 2, 9), endDate: null, imgSrc: 'images/kiwi.jpg', armyType: 'airforce'});
+let page1 = addPage(user1);
+parseUserToPage(user1, page1);
 
-let user2 = addUser('조기전역', new Date(2020, 2, 9), new Date(2021, 8, 20), 'images/sushi.jpg', 'airforce', 'gold');
+let user2 = addUser({ name: '조기전역', startDate: new Date(2020, 2, 9), endDate: new Date(2021, 8, 20), imgSrc: 'images/sushi.jpg', armyType: 'airforce', theme: 'gold' });
 let page2 = addPage(user2);
 parseUserToPage(user2, page2);
 
-let user3 = addUser('군순이', new Date(2020, 7, 9), null, 'images/flower.jpg', 'army', 'kiwi');
+let user3 = addUser({ name: '군순이', startDate: new Date(2020, 7, 9), endDate: null, imgSrc: 'images/flower.jpg', armyType: 'army', theme: 'kiwi' });
 let page3 = addPage(user3);
 parseUserToPage(user3, page3);

@@ -308,6 +308,10 @@ header .fas:active {
     cursor: pointer;
 }
 
+.user-list nav .fas:active {
+    opacity: 0.5;
+}
+
 .user-list ul {
     padding: 0;
     margin: 0;
@@ -359,7 +363,7 @@ header .fas:active {
 }
 
 .user-list .edit:active {
-    background-color: var(--color-yellow);
+    background-color: var(--color-light-yellow);
 }
 
 .user-list .remove {
@@ -367,7 +371,7 @@ header .fas:active {
     justify-content: center;
     align-items: center;
     width: 60px;
-    background-color: var(--color-grey);
+    background-color: #555252;
 }
 
 .user-list .remove:active {
