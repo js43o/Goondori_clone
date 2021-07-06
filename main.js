@@ -1,5 +1,5 @@
 const USER_PROTOTYPE_HTML = `
-<div id="" class="page">
+<div class="page">
     <div class="profile">
         <div class="profile_image">
             <label>
@@ -108,6 +108,7 @@ const reduce = (f, acc, iter) => {
 
     return acc;
 }
+
 const sum = iter => reduce((a, b) => a + b, iter);
 
 const parseValueToQuery = (value, query, page) => {
@@ -121,7 +122,7 @@ const dateToString = (date, delm = '-') => {
         '0' + (date.getMonth() + 1)}${delm}${date.getDate() > 9 ? date.getDate() : '0' + date.getDate()}`;
 }
 
-const addDate = (date, y = 0, m = 0, d = 0) => {
+const addValueToDate = (date, y = 0, m = 0, d = 0) => {
     let res = new Date(date);
 
     res.setFullYear(res.getFullYear() + y);
@@ -167,15 +168,11 @@ function addUser( info ) {
 }
 
 function addPage(user) {
-    let html = USER_PROTOTYPE_HTML;
-    let id = users.indexOf(user);
-
     let main = document.querySelector('.main');
-    main.insertAdjacentHTML('beforeend', html);
+    main.insertAdjacentHTML('beforeend', USER_PROTOTYPE_HTML);
 
     let elems = main.querySelectorAll('.page')
     let page = elems[elems.length - 1]; // get the last page
-    page.id = id;
 
     addProfileChangeListener(user, page);
     addDraggingListenerToPages();
@@ -189,7 +186,7 @@ function setUser(user, { name, startDate, endDate, imgSrc, armyType, theme }) {
     // main values
     user.name = name;
     user.startDate = startDate;
-    user.endDate = endDate || addDate(user.startDate, 0, sum(PERIODS[armyType]), -1);
+    user.endDate = endDate || addValueToDate(user.startDate, 0, sum(PERIODS[armyType]), -1);
     user.armyType = armyType;
     user.period = PERIODS[armyType];
     user.imgSrc = imgSrc || user.imgSrc;
@@ -201,7 +198,7 @@ function setUser(user, { name, startDate, endDate, imgSrc, armyType, theme }) {
 
     for (let i of user.period.slice(0, -1)) {
         acc += i;
-        user.rankDate.push(new Date(addDate(user.startDate, 0, acc)));
+        user.rankDate.push(new Date(addValueToDate(user.startDate, 0, acc)));
     }
     user.rankDate.push(new Date(user.endDate)); // endDate is less 1 day
 
@@ -211,7 +208,7 @@ function setUser(user, { name, startDate, endDate, imgSrc, armyType, theme }) {
     user.lastSalaryDate;
     let currentDate = new Date(startDate);
 
-    while ((currentDate = addDate(currentDate, 0, 1)) < Date.now()) {
+    while ((currentDate = addValueToDate(currentDate, 0, 1)) < Date.now()) {
         // 해당 계급의 최대 호봉을 초과했을 때
         if (currentDate >= user.rankDate[user.rankIndex + 1]) {
             user.salary = 0;
@@ -219,12 +216,12 @@ function setUser(user, { name, startDate, endDate, imgSrc, armyType, theme }) {
         }
         user.salary++;
     }
-    user.lastSalaryDate = new Date(addDate(currentDate, 0, -1));
+    user.lastSalaryDate = new Date(addValueToDate(currentDate, 0, -1));
 
     if (user.endDate < new Date()) user.rankIndex = 4;
 
     // next-dates
-    user.nextSalaryDate = user.rankIndex === 4 ? user.lastSalaryDate : addDate(user.lastSalaryDate, 0, 1);
+    user.nextSalaryDate = user.rankIndex === 4 ? user.lastSalaryDate : addValueToDate(user.lastSalaryDate, 0, 1);
     user.nextRankDate = user.rankIndex >= 3 ? user.endDate : user.rankDate[user.rankIndex + 1];
 
     updateProgress(user);
@@ -245,8 +242,17 @@ function updateProgress(user) {
 }
 
 function parseUserToPage(user, page) {
+    changeProfileImageByUserImgSrc(user, page);
 
-    // main values
+    parseMainInfoToPage(user, page);
+    parseNextDateToPage(user, page);
+    parseProgressToPage(user, page);
+    parseDaysTopage(user, page)
+
+    paintPageTheme(user, page);
+}
+
+const parseMainInfoToPage = (user, page) => {
     parseValueToQuery(user.name, '.name', page);
     parseValueToQuery(RANK[user.rankIndex], '.rank', page);
     parseValueToQuery(user.rankIndex > 3 ? '' : `${user.salary}호봉`, '.salary', page);
@@ -254,10 +260,13 @@ function parseUserToPage(user, page) {
     parseValueToQuery(dateToString(user.endDate, '.'), '.end-date', page);
     page.querySelector('.level i').className = `fas ${RANK_MARK[user.rankIndex]}`;
 
-    // profile image
-    page.querySelector('.profile_image img').src = user.imgSrc;
+    parseValueToQuery(`${user.endDate.getFullYear()}년
+    ${(user.endDate.getMonth() < 9 ? '0' : '') + (user.endDate.getMonth() + 1)}월
+    ${(user.endDate.getDate() < 10 ? '0' : '') + user.endDate.getDate()}일`,
+    '.end-date-type', page);
+}
 
-    // progress values
+const parseNextDateToPage = (user, page) => {
     parseValueToQuery(user.rankIndex < 4 ? dateToString(user.nextRankDate, '.') : '', '.next-rank-date', page);
     parseValueToQuery(user.rankIndex < 4 ? dateToString(user.nextSalaryDate, '.') : '', '.next-salary-date', page);
     parseValueToQuery(user.rankIndex < 4 ? RANK[user.rankIndex + 1] : '', '.next-rank', page);
@@ -271,23 +280,23 @@ function parseUserToPage(user, page) {
     }
     page.querySelector('.next-salary').textContent = user.rankIndex < 4 ?
         `${RANK[nextRankIndex]} ${(nextRankIndex === 4 && nextSalary === 1) ? '' : nextSalary + '호봉'}` : '';
+}
 
-    parseProgressToPage(user, page);
-
-    // days values
+const parseDaysTopage = (user, page) => {
     parseValueToQuery(user.fullDay, '.full-day', page);
     parseValueToQuery(user.currentDay, '.current-day', page);
     parseValueToQuery(user.remainingDay, '.remaining-day', page);
     parseValueToQuery(user.nextRankDay, '.next-rank-day', page);
+}
 
-    // page theme setting
+const paintPageTheme = (user, page) => {
     let progressMain = page.querySelector('.progress_main');
     let current = page.querySelector('.current');
     let progressSub = page.querySelector('.progress_sub');
 
     switch (user.theme) {
         case 'kiwi':
-            paintTheme({ current, progressMain, progressSub },
+            paintElements({ current, progressMain, progressSub },
                 { mainColor: 'var(--color-dark-green)',
                 mainBarColor: 'var(--color-yellow)',
                 sideColor: 'var(--color-green)',
@@ -295,7 +304,7 @@ function parseUserToPage(user, page) {
                 emptyBarColor: 'var(--color-light-green)' });
             break;
         case 'gold':
-            paintTheme({ current, progressMain, progressSub },
+            paintElements({ current, progressMain, progressSub },
                 { mainColor: 'var(--color-gold)',
                 mainBarColor: 'white',
                 sideColor: 'var(--color-dark-gold)',
@@ -303,7 +312,7 @@ function parseUserToPage(user, page) {
                 emptyBarColor: 'var(--color-light-gold)'});
             break;
         default:
-            paintTheme({ current, progressMain, progressSub },
+            paintElements({ current, progressMain, progressSub },
                 { mainColor: 'var(--color-brown)',
                 mainBarColor: 'var(--color-default-green)',
                 sideColor: 'var(--color-dark-brown)',
@@ -313,7 +322,7 @@ function parseUserToPage(user, page) {
     }
 }
 
-const paintTheme = ({ current, progressMain, progressSub },
+const paintElements = ({ current, progressMain, progressSub },
     { mainColor, mainBarColor, sideColor, sideBarColor, emptyBarColor }) => {
     let progressSalary = progressSub.children[0];
     let progressRank = progressSub.children[1];
@@ -347,9 +356,6 @@ function parseProgressToPage(user, page) {
 
     if (user.progressTimer) clearInterval(user.progressTimer);
     user.progressTimer = setInterval(() => {
-
-        console.log(user.name);
-
         const progresses = updateProgress(user);
 
         for (let i = 0; i < 3; i++) {
@@ -359,7 +365,7 @@ function parseProgressToPage(user, page) {
             if (getLeft(percents[i]) + getWidth(percents[i]) > getLeft(bars[i].parentElement) + getWidth(bars[i].parentElement))
                 percents[i].style.left = getWidth(bars[i].parentElement) - getWidth(percents[i]) + 'px';
         }
-    }, 1000);
+    }, 50);
 }
 
 
@@ -403,10 +409,7 @@ const addDraggingListenerToPages = () => {
 }
 
 const movePageWithIndex = index => {
-    let pageWidth = document.documentElement.clientWidth;
-
-    currentPagePos = -pageWidth * index;
-
+    currentPagePos = -document.documentElement.clientWidth * index;
     movePage(currentPagePos);
 }
 
@@ -450,17 +453,10 @@ const menuDraggingAction = event => {
     }
 }
 
-menuOpener.onpointerdown = () => {
-    menuOpener.onpointerup = openMenuWindow;
-}
-
+menuOpener.onpointerdown = () => menuOpener.onpointerup = openMenuWindow;
+menuCloser.onpointerdown = () => menuCloser.onpointerup = closeMenuWindow;
 menuWindow.onpointerdown = menuDraggingAction;
-
 black.onpointerdown = closeMenuWindow;
-
-menuCloser.onpointerdown = () => {
-    menuCloser.onpointerup = closeMenuWindow;
-}
 
 
 // edit window open
@@ -476,19 +472,13 @@ const initializeForm = (user, form) => {
     form['end-date'].value = dateToString(user.endDate);
 }
 
-const openEditWindow = () => {
-    editWindow.classList.add('active');
-}
-
-const closeEditWindow = () => {
-    editWindow.classList.remove('active');
-}
+const openEditWindow = () => editWindow.classList.add('active');
+const closeEditWindow = () => editWindow.classList.remove('active');
 
 const editOpenAction = () => {
     openEditWindow();
 
     let form = document.forms['user-info'];
-
     initializeForm(users[currentIndex], form);
 
     // set end-date by army-type
@@ -496,15 +486,15 @@ const editOpenAction = () => {
         switch (form['army-type'].value) {
             case 'army':
                 form['end-date'].value = dateToString(
-                    addDate(new Date(form['start-date'].value), 0, 18, -1));
+                    addValueToDate(new Date(form['start-date'].value), 0, 18, -1));
                 break;
             case 'navy':
                 form['end-date'].value = dateToString(
-                    addDate(new Date(form['start-date'].value), 0, 20, -1));
+                    addValueToDate(new Date(form['start-date'].value), 0, 20, -1));
                 break;
             case 'airforce':
                 form['end-date'].value = dateToString(
-                    addDate(new Date(form['start-date'].value), 0, 21, -1));
+                    addValueToDate(new Date(form['start-date'].value), 0, 21, -1));
                 break;
         }
     }
@@ -557,13 +547,8 @@ const editCloseAction = () => {
     updateUserList();
 }
 
-editOpener.onpointerdown = () => {
-    editOpener.onpointerup = editOpenAction;
-}
-
-editCloser.onpointerdown = () => {
-    editCloser.onpointerup = editCloseAction;
-}
+editOpener.onpointerdown = () => editOpener.onpointerup = editOpenAction;
+editCloser.onpointerdown = () => editCloser.onpointerup = editCloseAction;
 
 // profile image event
 const addProfileChangeListener = (user, page) => {
@@ -571,11 +556,13 @@ const addProfileChangeListener = (user, page) => {
 
     profile.onchange = () => {
         user.imgSrc = getFilePath(profile) || user.imgSrc;
-        page.querySelector('.profile_image img').src = user.imgSrc;
+        changeProfileImageByUserImgSrc(user, page);
 
         profile.value = null;
     }
 }
+
+const changeProfileImageByUserImgSrc = (user, page) => page.querySelector('.profile_image img').src = user.imgSrc;
 
 
 // user-list open
@@ -586,13 +573,8 @@ let userListAdd = document.querySelector('#user-list-add');
 let userListRemove = document.querySelector('#user-list-add');
 let userListUl = userListWindow.querySelector('ul');
 
-const openUserListWindow = () => {
-    userListWindow.classList.add('active');
-}
-
-const closeUserListWindow = () => {
-    userListWindow.classList.remove('active');
-}
+const openUserListWindow = () => userListWindow.classList.add('active');
+const closeUserListWindow = () => userListWindow.classList.remove('active');
 
 const loadUserList = users => {
     let fragment = new DocumentFragment();
@@ -609,7 +591,6 @@ const loadUserList = users => {
 
         fragment.append(li);
     }
-
     return fragment;
 }
 
@@ -617,11 +598,12 @@ const updateUserList = () => {
     userListUl.innerHTML = '';
     userListUl.append(loadUserList(users));
 
-    addDraggingListenerToUserList();
-    addButtonListenerToUserItem();
+    addDraggingListenerToUserItem();
+    addEditListenerToUserItem();
+    addRemoveListenerToUserItem();
 }
 
-const addDraggingListenerToUserList = () => {
+const addDraggingListenerToUserItem = () => {
     for (let li of userListUl.querySelectorAll('li')) {
         let userItem = li.querySelector('.user-item');
         userItem.onpointerdown = event => {
@@ -659,10 +641,9 @@ const addDraggingListenerToUserList = () => {
     }
 }
 
-const addButtonListenerToUserItem = () => {
+const addEditListenerToUserItem = () => {
     Array.from(userListUl.querySelectorAll('li')).forEach((li, li_index) => {
         let edit = li.querySelector('.edit');
-        let remove = li.querySelector('.remove');
 
         edit.onpointerdown = () => {
             edit.onpointerup = () => {
@@ -673,6 +654,13 @@ const addButtonListenerToUserItem = () => {
                 edit.onpointerup = null;
             }
         }
+    });
+}
+
+const addRemoveListenerToUserItem = () => {
+    Array.from(userListUl.querySelectorAll('li')).forEach((li, li_index) => {
+        let remove = li.querySelector('.remove');
+        
         remove.onpointerdown = () => {
             remove.onpointerup = () => {
                 if (!confirm('정말 삭제하시겠습니까?')) return;
@@ -688,10 +676,12 @@ const addButtonListenerToUserItem = () => {
                 });
 
                 clearInterval(users[li_index].progressTimer);
+
                 users.splice(li_index, 1);
                 pages.splice(li_index, 1);
 
                 currentIndex = Math.min(currentIndex, users.length - 1);
+
                 movePageWithIndex(currentIndex);
 
                 remove.onpointerup = null;
@@ -706,14 +696,13 @@ const userListOpenAction = () => {
     if (userListWindow.classList.contains('active')) return;
 
     closeMenuWindow();
-
     openUserListWindow();
-
     updateUserList();
 }
 
 const userListCloseAction = () => {
     if (!userListWindow.classList.contains('active')) return;
+
     closeUserListWindow();
     setTimeout(() => userListUl.innerHTML = '', 200);
 }
@@ -730,17 +719,10 @@ const userAddingAction = () => {
     parseUserToPage(newUser, newPage);
 }
 
-userListCloser.onpointerdown = () => {
-    userListCloser.onpointerup = userListCloseAction;
-}
+userListCloser.onpointerdown = () => userListCloser.onpointerup = userListCloseAction;
+userListOpener.onpointerdown = () => userListOpener.onpointerup = userListOpenAction;
+userListAdd.onpointerdown = () => userListAdd.onpointerup = userAddingAction;
 
-userListOpener.onpointerdown = () => {
-    userListOpener.onpointerup = userListOpenAction;
-}
-
-userListAdd.onpointerdown = () => {
-    userListAdd.onpointerup = userAddingAction;
-}
 
 
 // initial execution
