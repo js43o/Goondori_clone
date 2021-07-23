@@ -3,7 +3,7 @@ const goondori = () => {
     const USER_PROTOTYPE_HTML = `
 <div class="page">
     <div class="profile">
-        <div class="profile_image">
+        <div class="button profile_image">
             <label>
                 <img src="" alt="profile_image">
                 <input name="change-image" type="file" accept="image/*">
@@ -93,6 +93,49 @@ const goondori = () => {
     document.ondragstart = () => false;
     document.onselectstart = () => false;
     document.oncontextmenu = () => false;
+
+
+    /* data functions */
+
+    const saveStorage = () => {
+        clearStorage();
+        for (let [index, u] of users.entries()) {
+            let user = JSON.stringify(u);
+            localStorage.setItem(index, user);
+        }
+    }
+
+    const loadStorage = () => {
+        let keys = Object.keys(localStorage);
+        if (keys.length === 0) userAddingAction();
+
+        for (let key of keys) {
+            let u = JSON.parse(localStorage.getItem(key));
+
+            u.startDate = parseJsonToDate(u.startDate);
+            u.endDate = parseJsonToDate(u.endDate);
+            u.nextRankDate = parseJsonToDate(u.nextRankDate);
+            u.nextSalaryDate = parseJsonToDate(u.nextSalaryDate);
+            u.lastSalaryDate = parseJsonToDate(u.lastSalaryDate);
+
+            let rankDate = [];
+            for (let rd of u.rankDate) {
+                rankDate.push(parseJsonToDate(rd));
+            }
+            u.rankDate = rankDate;
+
+            let user = addUser(u);
+            let page = addPage(user);
+            parseUserToPage(user, page);
+        }
+    }
+
+    const clearStorage = () => {
+        localStorage.clear();
+    }
+
+    const parseJsonToDate = str => str.match(/\d{4}-\d{2}-\d{2}/) ?
+        new Date(`${str.slice(0, 4)}-${str.slice(5, 7)}-${str.slice(8, 10)}`) : str;
 
 
     /* utility functions */
@@ -561,6 +604,7 @@ const goondori = () => {
             closeEditWindow();
 
             updateUserList();
+            saveStorage();
         }
     }
 
@@ -579,12 +623,25 @@ const goondori = () => {
         profile.onchange = () => {
             user.imgSrc = getFilePath(profile) || user.imgSrc;
             changeProfileImageByUserImgSrc(user, page);
+            saveStorage();
 
             profile.value = null;
         }
     }
 
-    const changeProfileImageByUserImgSrc = (user, page) => page.querySelector('.profile_image img').src = user.imgSrc;
+    const changeProfileImageByUserImgSrc = (user, page) => {
+        let img = document.createElement('img');
+        img.src = user.imgSrc;
+
+        img.onload = () => {
+            page.querySelector('.profile_image img').remove();
+            page.querySelector('.profile_image').children[0].prepend(img);
+        };
+        img.onerror = e => {
+            // 로컬에서 파일을 읽어올 수 없음.
+            page.querySelector('.profile_image img').src = `images/${user.theme}.jpg`;
+        }
+    };
 
 
     // user-list open
@@ -703,6 +760,7 @@ const goondori = () => {
 
                     movePageWithIndex(currentIndex);
                     updateUserList();
+                    saveStorage();
 
                     remove.onpointerup = null;
                 }
@@ -728,7 +786,6 @@ const goondori = () => {
     const userAddingAction = () => {
         let newUser = addUser(getDefaultUser());
         currentIndex = users.length - 1;
-
         movePageWithIndex(currentIndex);
 
         editOpenAction();
@@ -741,19 +798,8 @@ const goondori = () => {
     userListOpener.onpointerdown = () => userListOpener.onpointerup = userListOpenAction;
     userListAdd.onpointerdown = () => userListAdd.onpointerup = userAddingAction;
 
-
     // initial execution
-    let user1 = addUser({ name: '군돌이', startDate: new Date(2020, 2, 9), endDate: null, imgSrc: 'images/kiwi.jpg', armyType: 'airforce' });
-    let page1 = addPage(user1);
-    parseUserToPage(user1, page1);
-
-    let user2 = addUser({ name: '조기전역', startDate: new Date(2020, 2, 9), endDate: new Date(2021, 8, 20), imgSrc: 'images/sushi.jpg', armyType: 'airforce', theme: 'gold' });
-    let page2 = addPage(user2);
-    parseUserToPage(user2, page2);
-
-    let user3 = addUser({ name: '군순이', startDate: new Date(2020, 7, 9), endDate: null, imgSrc: 'images/flower.jpg', armyType: 'army', theme: 'kiwi' });
-    let page3 = addPage(user3);
-    parseUserToPage(user3, page3);
+    loadStorage();
 }
 
 goondori();
